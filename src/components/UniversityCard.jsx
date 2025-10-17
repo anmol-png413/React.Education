@@ -51,7 +51,7 @@ useEffect(() => {
       </h2>
 
       {related.length === 0 ? (
-        <p className="text-gray-600">No related universities available.</p>
+        <p className="text-gray-600">No testing universities available.</p>
       ) : (
         related.map((uni) => (
           <div
