@@ -7,7 +7,8 @@ import "swiper/css/effect-fade";
 import api from "../../api"; // adjust path based on your project
 
 const Hero = () => {
-  const images = ["/banner1.jpg", "/banner2.jpg", "/banner3.jpg"];
+  // const images = ["/banner1.jpg", "/banner2.jpg", "/banner3.jpg"];
+  const images = ["/banner1.jpg", "/banner2.jpg", "/banner3.jpg", "/banner4.jpg", "/banner5.jpg"];
 
   const containerVariants = {
     hidden: { opacity: 0 },

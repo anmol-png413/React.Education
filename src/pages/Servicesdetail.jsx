@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import GetInTouchForm from '../components/GetInTouchForm';
@@ -6,11 +7,12 @@ import TrendingCourse2 from "../components/TrandingCourse2";
 import UniversityBox from '../components/FeaturedUniversities';
 import api from '../api';
 import { Helmet } from "react-helmet";
+import { GraduationCap, MapPin, FileText, Globe, CheckCircle } from 'lucide-react';
 
+// ---------------------- Skeleton Loader ----------------------
 const ServiceDetailSkeleton = () => (
   <section className="bg-gradient-to-b from-blue-50 to-white py-8 px-4 md:px-8 animate-pulse">
     <div className="max-w-7xl mx-auto md:grid md:grid-cols-12 gap-6 flex flex-col relative">
-      {/* Sidebar Skeleton */}
       <aside className="md:col-span-4 md:block">
         <div className="space-y-6">
           <div className="bg-white rounded-2xl shadow p-6">
@@ -31,21 +33,16 @@ const ServiceDetailSkeleton = () => (
         </div>
       </aside>
 
-      {/* Main Content Skeleton */}
       <main className="md:col-span-8 space-y-8 mt-6 md:mt-0">
         <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border border-blue-100">
           <div className="h-10 bg-gray-200 rounded-md w-3/4 mb-4"></div>
           <div className="h-8 bg-gray-200 rounded-md w-1/2 mb-6"></div>
           <div className="w-full h-80 bg-gray-200 rounded-xl mb-6"></div>
-          
-          {/* Tabs Skeleton */}
           <div className="flex flex-wrap gap-2 mb-4">
             <div className="h-10 bg-gray-200 rounded-full w-24"></div>
             <div className="h-10 bg-gray-200 rounded-full w-32"></div>
             <div className="h-10 bg-gray-200 rounded-full w-28"></div>
           </div>
-
-          {/* Content Skeleton */}
           <div className="space-y-4">
             <div className="h-4 bg-gray-200 rounded-md w-full"></div>
             <div className="h-4 bg-gray-200 rounded-md w-full"></div>
@@ -58,7 +55,7 @@ const ServiceDetailSkeleton = () => (
   </section>
 );
 
-
+// ---------------------- Main Component ----------------------
 const ServiceDetail = () => {
   const { slug } = useParams();
   const [service, setService] = useState(null);
@@ -66,6 +63,7 @@ const ServiceDetail = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [showSidebar, setShowSidebar] = useState(false);
   const [seo, setSeo] = useState({});
+  const [contentTab, setContentTab] = useState('documents');
 
   const toggleSidebar = () => setShowSidebar(!showSidebar);
   const closeSidebar = () => setShowSidebar(false);
@@ -78,7 +76,6 @@ const ServiceDetail = () => {
         const res = await api.get(`/service-details/${slug}`);
         const serviceData = res?.data?.data?.service;
         setSeo(res.data.data?.seo || {});
-        
         setService(serviceData);
       } catch (error) {
         console.error("Error fetching service details:", error);
@@ -98,135 +95,224 @@ const ServiceDetail = () => {
     return <div className="text-center text-red-500 mt-10">Service not found.</div>;
   }
 
+  // ✅ YAHAN CHANGE HAI - Ab har service ke liye tabs show honge agar 3+ contents hain
+  const showEnhancedTabs = service.contents?.length >= 3;
+
   return (
-
     <>
-
+      {/* 🔹 SEO Meta Tags */}
       <Helmet>
-      {/* 🔹 Basic SEO */}
-      <title>{seo?.meta_title}</title>
-      <meta name="title" content={seo?.meta_title} />
-      <meta name="description" content={seo?.meta_description} />
-      <meta name="keywords" content={seo?.meta_keyword} />
-
-      {/* 🔹 Robots */}
-      <meta name="robots" content={seo?.robots || "index, follow"} />
-
-      {/* 🔹 Canonical */}
-      {seo?.page_url && <link rel="canonical" href={seo?.page_url} />}
-
-      {/* 🔹 Open Graph (Facebook, LinkedIn, etc.) */}
-      <meta property="og:title" content={seo?.meta_title} />
-      <meta property="og:description" content={seo?.meta_description} />
-      <meta property="og:image" content={seo?.og_image_path} />
-      <meta property="og:url" content={seo?.page_url} />
-      <meta property="og:site_name" content={seo?.site_name || "Study in Malaysia"} />
-      <meta property="og:type" content={seo?.og_type || "website"} />
-      <meta property="og:locale" content={seo?.og_locale || "en_US"} />
- {/* 🔹 SEO Rating (as meta) */}
-      {seo?.seo_rating && <meta name="seo:rating" content={seo?.seo_rating} />}
-
-      {/* 🔹 JSON-LD Schema (Structured Data) */}
-      {seo?.seo_rating_schema && (
-        <script type="application/ld+json">
-          {JSON.stringify(seo.seo_rating_schema)}
-        </script>
-      )}
-     
-    </Helmet>
-
-    <section className="bg-gradient-to-b from-blue-50 to-white py-8 px-4 md:px-8">
-      <div className="max-w-7xl mx-auto md:grid md:grid-cols-12 gap-6 flex flex-col relative">
-
-        {/* Mobile Toggle */}
-        <button
-          onClick={toggleSidebar}
-          className="md:hidden bg-blue-600 text-white py-2 px-4 rounded mb-4 w-fit self-end z-40"
-        >
-          {showSidebar ? "Close Sidebar" : "📂 Show Services"}
-        </button>
-
-        {/* Overlay */}
-        {showSidebar && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" onClick={closeSidebar} />
+        <title>{seo?.meta_title}</title>
+        <meta name="title" content={seo?.meta_title} />
+        <meta name="description" content={seo?.meta_description} />
+        <meta name="keywords" content={seo?.meta_keyword} />
+        <meta name="robots" content={seo?.robots || "index, follow"} />
+        {seo?.page_url && <link rel="canonical" href={seo?.page_url} />}
+        <meta property="og:title" content={seo?.meta_title} />
+        <meta property="og:description" content={seo?.meta_description} />
+        <meta property="og:image" content={seo?.og_image_path} />
+        <meta property="og:url" content={seo?.page_url} />
+        <meta property="og:site_name" content={seo?.site_name || "Study in Malaysia"} />
+        <meta property="og:type" content={seo?.og_type || "website"} />
+        <meta property="og:locale" content={seo?.og_locale || "en_US"} />
+        {seo?.seo_rating && <meta name="seo:rating" content={seo?.seo_rating} />}
+        {seo?.seo_rating_schema && (
+          <script type="application/ld+json">
+            {JSON.stringify(seo.seo_rating_schema)}
+          </script>
         )}
+      </Helmet>
 
-        {/* Sidebar */}
-        <aside
-          className={`md:col-span-4 fixed md:static top-0 right-0 z-40 h-full md:h-fit w-full md:w-auto bg-white md:bg-transparent p-4 md:p-0 overflow-y-auto shadow-lg md:shadow-none transition-transform transform ${
-            showSidebar ? "translate-x-0" : "translate-x-full"
-          } md:translate-x-0 md:block`}
-        >
-          <div className="flex justify-end mb-4 md:hidden">
-            <button
-              onClick={closeSidebar}
-              className="text-xl text-gray-600 hover:text-red-500"
-            >
-              ❌ close sidebar
-            </button>
-          </div>
-          <div className="space-y-6">
-            <OtherServicesBox />
-            <GetInTouchForm />
-            <TrendingCourse2 />
-            <UniversityBox />
-          </div>
-        </aside>
+      {/* 🔹 HERO SECTION */}
+      <section className="relative bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utb3BhY2l0eT0iLjA1IiBzdHJva2Utd2lkdGg9IjIiLz48L2c+PC9zdmc+')] opacity-10"></div>
 
-        {/* Main Content */}
-        <main className="md:col-span-8 space-y-8 mt-6 md:mt-0">
-          <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border border-blue-100 transition hover:shadow-blue-200 duration-300">
-            <h1 className="text-3xl md:text-5xl font-extrabold text-blue-900 mb-4">
-              {service.page_name}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 relative">
+          <div className="text-center">
+            <div className="flex justify-center mb-6">
+              <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
+                <GraduationCap className="w-16 h-16" />
+              </div>
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 tracking-tight">
+              {service?.page_name || "Service Details"}
             </h1>
 
-            {service.headline && (
-              <h2 className="text-xl md:text-2xl text-blue-700 font-semibold mb-6">
+            <div className="flex items-center justify-center space-x-2 mb-6">
+              <MapPin className="w-5 h-5" />
+              <p className="text-xl sm:text-2xl text-emerald-100">2025 Edition</p>
+            </div>
+
+            {service?.headline && (
+              <p className="text-lg sm:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
                 {service.headline}
-              </h2>
-            )}
-
-            {service.thumbnail_path && (
-              <img
-                src={`https://www.educationmalaysia.in/${service.thumbnail_path}`}
-                alt={service.page_name}
-                className="w-full h-60 md:h-80 object-cover rounded-xl mb-6"
-              />
-            )}
-
-            {/* Tabs */}
-            {service.contents?.length > 0 && (
-              <div>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {service.contents.map((item, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setActiveTab(index)}
-                      className={`px-4 py-2 rounded-full border text-sm font-medium ${
-                        activeTab === index
-                          ? "bg-blue-600 text-white"
-                          : "bg-white border-blue-200 text-blue-700"
-                      }`}
-                    >
-                      {item.tab_title.length > 60
-                        ? item.tab_title.slice(0, 60) + "..."
-                        : item.tab_title}
-                    </button>
-                  ))}
-                </div>
-
-                <div
-                  className="prose max-w-none prose-blue text-gray-800"
-                  dangerouslySetInnerHTML={{
-                    __html: service.contents[activeTab].tab_content,
-                  }}
-                />
-              </div>
+              </p>
             )}
           </div>
-        </main>
-      </div>
-    </section>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 60" className="w-full h-8 sm:h-12 fill-slate-50">
+            <path d="M0,30 Q360,0 720,30 T1440,30 L1440,60 L0,60 Z"></path>
+          </svg>
+        </div>
+      </section>
+
+      {/* 🔹 TAB NAVIGATION - AB HAR SERVICE KE LIYE SHOW HOGA */}
+      {showEnhancedTabs && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
+          <div className="bg-white rounded-xl shadow-lg p-2 flex flex-wrap gap-2">
+            <button
+              onClick={() => setContentTab('documents')}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                contentTab === 'documents'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <FileText className="w-5 h-5" />
+              <span>Required Documents</span>
+            </button>
+            <button
+              onClick={() => setContentTab('additional')}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                contentTab === 'additional'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <Globe className="w-5 h-5" />
+              <span>Additional Info</span>
+            </button>
+            <button
+              onClick={() => setContentTab('checklist')}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                contentTab === 'checklist'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <CheckCircle className="w-5 h-5" />
+              <span>Checklist</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 🔹 SERVICE DETAIL SECTION */}
+      <section className="bg-gradient-to-b from-blue-50 to-white py-8 px-4 md:px-8">
+        <div className="max-w-7xl mx-auto md:grid md:grid-cols-12 gap-6 flex flex-col relative">
+          {/* Mobile Toggle */}
+          <button
+            onClick={toggleSidebar}
+            className="md:hidden bg-blue-600 text-white py-2 px-4 rounded mb-4 w-fit self-end z-40"
+          >
+            {showSidebar ? "Close Sidebar" : "📂 Show Services"}
+          </button>
+
+          {showSidebar && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" onClick={closeSidebar} />
+          )}
+
+          {/* Sidebar */}
+          <aside
+            className={`md:col-span-4 fixed md:static top-0 right-0 z-40 h-full md:h-fit w-full md:w-auto bg-white md:bg-transparent p-4 md:p-0 overflow-y-auto shadow-lg md:shadow-none transition-transform transform ${
+              showSidebar ? "translate-x-0" : "translate-x-full"
+            } md:translate-x-0 md:block`}
+          >
+            <div className="flex justify-end mb-4 md:hidden">
+              <button
+                onClick={closeSidebar}
+                className="text-xl text-gray-600 hover:text-red-500"
+              >
+                ❌ close sidebar
+              </button>
+            </div>
+            <div className="space-y-6">
+              <OtherServicesBox />
+              <GetInTouchForm />
+              <TrendingCourse2 />
+              <UniversityBox />
+            </div>
+          </aside>
+
+          {/* Main Content */}
+          <main className="md:col-span-8 space-y-8 mt-6 md:mt-0">
+            <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border border-blue-100 transition hover:shadow-blue-200 duration-300">
+              {service.thumbnail_path && (
+                <img
+                  src={`https://www.educationmalaysia.in/${service.thumbnail_path}`}
+                  alt={service.page_name}
+                  className="w-full h-60 md:h-80 object-cover rounded-xl mb-6"
+                />
+              )}
+
+              {service.contents?.length > 0 && (
+                <div>
+                  {showEnhancedTabs ? (
+                    <>
+                      {/* ✅ Enhanced tabs ke liye content */}
+                      {contentTab === 'documents' && (
+                        <div
+                          className="prose max-w-none prose-blue text-gray-800"
+                          dangerouslySetInnerHTML={{
+                            __html: service.contents[0].tab_content,
+                          }}
+                        />
+                      )}
+                      {contentTab === 'additional' && (
+                        <div
+                          className="prose max-w-none prose-blue text-gray-800"
+                          dangerouslySetInnerHTML={{
+                            __html: service.contents[1].tab_content,
+                          }}
+                        />
+                      )}
+                      {contentTab === 'checklist' && (
+                        <div
+                          className="prose max-w-none prose-blue text-gray-800"
+                          dangerouslySetInnerHTML={{
+                            __html: service.contents[2].tab_content,
+                          }}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {/* Original tab navigation for services with less than 3 tabs */}
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {service.contents.map((item, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setActiveTab(index)}
+                            className={`px-4 py-2 rounded-full border text-sm font-medium ${
+                              activeTab === index
+                                ? "bg-blue-600 text-white"
+                                : "bg-white border-blue-200 text-blue-700"
+                            }`}
+                          >
+                            {item.tab_title.length > 60
+                              ? item.tab_title.slice(0, 60) + "..."
+                              : item.tab_title}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div
+                        className="prose max-w-none prose-blue text-gray-800"
+                        dangerouslySetInnerHTML={{
+                          __html: service.contents[activeTab].tab_content,
+                        }}
+                      />
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
+      </section>
     </>
   );
 };

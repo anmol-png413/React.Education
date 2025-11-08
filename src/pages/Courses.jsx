@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { FiChevronDown } from "react-icons/fi";
@@ -5,14 +6,29 @@ import { FaStar } from "react-icons/fa";
 import { Home, Layers } from "lucide-react";
 import api from "../api"; // Adjust the import based on your project structure
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
-import {Helmet } from "react-helmet"; // Import Helmet for SEO management
+import {Helmet } from "react-helmet";
+import ApplicationModal from "../components/ApplicationModal"; // adjust path as needed // Import Helmet for SEO management
+
 import {
   MapPin,
   Building,
   Star,
   BookOpen,
   Globe,
-
+  Search,
+  ArrowUpDown,
+  List,
+  LayoutGrid,
+   ChevronUp,
+    ChevronDown,
+    Filter,
+     Heart ,
+       X,           
+  ArrowRight,  
+  Clock,       
+  Calendar,    
+  DollarSign,  
+  Award,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -53,7 +69,7 @@ const CourseCardSkeleton = () => (
 );
 
 const FilterPanelSkeleton = () => (
-  <div className="hidden md:block w-[280px] bg-white border border-gray-200 p-5 rounded-xl shadow-md space-y-6 text-base animate-pulse">
+  <div className="hidden lg:block w-[280px] min-w-[280px] flex-shrink-0 bg-white border border-gray-200 p-5 rounded-xl shadow-md space-y-6 text-base animate-pulse">
     <div className="flex justify-between items-center mb-2">
       <div className="h-6 bg-gray-200 rounded-md w-1/3"></div>
       <div className="h-4 bg-gray-200 rounded-md w-1/4"></div>
@@ -77,6 +93,9 @@ const Courses = () => {
   const location = useLocation();
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState('list');
+    const [showApplicationModal, setShowApplicationModal] = useState(false);
+const [selectedCourse, setSelectedCourse] = useState(null);
 
   const infoText = `or Arts, our platform offers detailed insights to guide your choices. 
 From undergraduate to postgraduate levels, we provide expert advice and up-to-date information on course requirements, eligibility, and university rankings. 
@@ -85,6 +104,8 @@ Our mission is to simplify`;
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [compareList, setCompareList] = useState([]);
   const [showCompareModal, setShowCompareModal] = useState(false);
+  const [comparisonCourses, setComparisonCourses] = useState([]);
+const [showComparisonModal, setShowComparisonModal] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [seo, setSeo] = useState({});
   const [totalCourses, setTotalCourses] = useState(0);
@@ -97,6 +118,8 @@ Our mission is to simplify`;
     intakes: "",
     study_modes: "",
   });
+  // Active filter count
+const activeFilterCount = Object.values(selectedFilters).filter(val => val !== "").length;
 
   const [filters, setFilters] = useState({
     levels: [],
@@ -159,6 +182,8 @@ Our mission is to simplify`;
       console.error("Error fetching filters:", e);
     }
   };
+
+
 
   const fetchCourses = async (page = 1, filtersToApply = {}, searchTerm = "") => {
     setLoading(true);
@@ -288,31 +313,41 @@ Our mission is to simplify`;
     navigate({ search: params.toString() });
     setCurrentPage(1);
   };
-
-  const handleApplyNow = async (courseId) => {
+  const handleApplyNow = async (courseOrId) => {
+  console.log("🔥 Apply Now clicked!", courseOrId); // Debug ke liye
+  
   const token = localStorage.getItem("token");
 
+  // Check if courseOrId is an object (course) or just ID
+  const courseId = typeof courseOrId === 'object' ? courseOrId.id : courseOrId;
+  const courseData = typeof courseOrId === 'object' ? courseOrId : null;
+
   if (!token) {
-    // ✅ User not logged in → redirect to sign-up
-    navigate(`/sign-up?program_id=${courseId}`);
+    // User not logged in
+    if (courseData) {
+      // Show modal with course data
+      setSelectedCourse(courseData);
+      setShowApplicationModal(true);
+    } else {
+      // Redirect to sign-up
+      navigate(`/sign-up?program_id=${courseId}`);
+    }
     return;
   }
 
+  // User logged in - Apply directly via API
   try {
-    // ✅ Apply API
     await api.get(`/student/apply-program/${courseId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
-   toast.success("Program applied successfully!");
+    toast.success("Program applied successfully!");
     setAppliedCourses(prev => new Set(prev).add(courseId));
-    // Redirect to profile after success
     navigate("/student/profile");
   } catch (error) {
-     if (error.response?.status === 409) {
-      // ⚠️ Already applied
+    if (error.response?.status === 409) {
       toast.warn("You have already applied for this program.");
       setAppliedCourses(prev => new Set(prev).add(courseId));
       navigate("/student/profile");
@@ -321,6 +356,36 @@ Our mission is to simplify`;
       toast.error("Something went wrong while applying.");
     }
   }
+};
+
+  
+const handleAddToCompare = (course) => {
+  if (comparisonCourses.length >= 4) {
+    toast.warn("You can compare maximum 4 courses");
+    return;
+  }
+  if (comparisonCourses.find(c => c.id === course.id)) {
+    toast.info("Course already added to comparison");
+    return;
+  }
+  setComparisonCourses([...comparisonCourses, course]);
+  toast.success("Course added to comparison");
+};
+
+const handleRemoveFromCompare = (courseId) => {
+  setComparisonCourses(comparisonCourses.filter(c => c.id !== courseId));
+};
+
+const handleClearAll = () => {
+  setComparisonCourses([]);
+};
+
+const handleCompare = () => {
+  if (comparisonCourses.length < 2) {
+    toast.warn("Please add at least 2 courses to compare");
+    return;
+  }
+  setShowComparisonModal(true);
 };
 
 
@@ -423,15 +488,17 @@ Our mission is to simplify`;
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => {
-                  // Proceed to compare page if needed
-                  alert("Comparison logic triggered!");
-                }}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-full text-sm font-bold"
-              >
-                🔍 Compare
-              </button>
+            <button
+  onClick={handleCompare}
+  disabled={comparisonCourses.length < 2}
+  className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${
+    comparisonCourses.length >= 2
+      ? 'bg-orange-500 hover:bg-orange-600 text-white'
+      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+  }`}
+>
+  🔍 Compare {comparisonCourses.length > 0 && `(${comparisonCourses.length})`}
+</button>
               <button
                 onClick={() => setCompareList([])}
                 className="border px-5 py-2 rounded-full text-sm font-semibold"
@@ -464,383 +531,530 @@ Our mission is to simplify`;
           </div>
         </div>
       </div>
+{/* <div className="flex flex-col md:flex-row bg-gradient-to-br from-blue-50 to-white p-4 gap-6 min-h-screen"> */}
 
-      <div className="flex flex-col md:flex-row bg-gradient-to-br from-blue-50 to-white p-4 gap-6 min-h-screen">
-        {/* Mobile Filter Button */}
-        <div className="md:hidden flex justify-end">
+      
+    {/* </div>   */}
+    {/* )} */}
+  {/* Mobile Filter Drawer */}
+  {showMobileFilter && (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex">
+      <div className="w-4/5 max-w-xs bg-white p-5 rounded-r-xl shadow-xl h-full overflow-y-auto space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+          <div className="flex items-center gap-2">
+            <Filter className="w-5 h-5 text-blue-600" />
+            <h2 className="text-xl font-bold text-gray-900">Filters</h2>
+            {activeFilterCount > 0 && (
+              <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                {activeFilterCount}
+              </span>
+            )}
+          </div>
           <button
-            className="bg-blue-700 text-white px-4 py-2 rounded-xl shadow-md"
-            onClick={() => setShowMobileFilter(true)}
+            className="text-2xl font-bold text-gray-600 hover:text-gray-900"
+            onClick={() => setShowMobileFilter(false)}
           >
-           Filters
+            ×
           </button>
         </div>
 
-        {/* Filter Panel */}
-        {loading ? <FilterPanelSkeleton /> : (
-        <div className="hidden md:block w-[280px] bg-white border border-gray-200 p-5 rounded-xl shadow-md space-y-6 text-base">
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="text-xl font-bold text-gray-800">Filters</h2>
-            <button
-              onClick={handleReset}
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Reset All Filters
-            </button>
-          </div>
+        {activeFilterCount > 0 && (
+          <button
+            onClick={() => {
+              handleReset();
+              setShowMobileFilter(false);
+            }}
+            className="text-sm text-blue-600 hover:text-blue-700 font-semibold hover:underline"
+          >
+            Clear All Filters
+          </button>
+        )}
 
-         {Object.entries(filters).map(([key, items]) => (
-  <div key={key} className="space-y-2">
-    <div>
-      <div
-        className="flex justify-between items-center cursor-pointer text-gray-800 font-semibold text-[16px]"
-        onClick={() => toggleFilter(key)}
-      >
-        <span>
-          {key
-            .replace(/([A-Z])/g, " $1")
-            .replace(/^./, (s) => s.toUpperCase())}
-        </span>
-        <FiChevronDown
-          className={`text-xl transform transition-transform duration-300 ${
-            openFilters[key] ? "rotate-180" : ""
-          }`}
-        />
-      </div>
-
-      {openFilters[key] && (
-        <div className="mt-3 pl-1 space-y-3 max-h-56 overflow-y-auto">
-          {items.map((item) => {
-            const value = item.slug || item.name || item.month || item.study_mode || item;
-            const display = item.name || item.slug || item.month || item.study_mode || item;
-            return (
-              <label
-                key={item.id || value}
-                className="flex items-center gap-3 text-[15px] text-gray-700"
+        {/* Mobile Filters */}
+        <div className="space-y-2">
+          {Object.entries(filters).map(([key, items]) => (
+            <div key={key} className="border-b border-gray-100 last:border-0 pb-2">
+              <button
+                onClick={() => toggleFilter(key)}
+                className="w-full flex items-center justify-between py-2 text-left hover:bg-gray-50 rounded-lg px-2"
               >
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 accent-blue-600"
-                  checked={selectedFilters[key] === value}
-                  onChange={() => handleFilterChange(key, value)}
-                />
-                <span>{display}</span>
-              </label>
-            );
-          })}
-                  </div>
+                <span className="font-semibold text-gray-900 capitalize flex items-center gap-2">
+                  {key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}
+                  {selectedFilters[key] && (
+                    <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                      1
+                    </span>
+                  )}
+                </span>
+                {openFilters[key] ? (
+                  <ChevronUp className="w-5 h-5 text-gray-600" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-600" />
                 )}
-              </div>
+              </button>
+
+              {openFilters[key] && (
+                <div className="mt-2 space-y-2 pl-2 max-h-56 overflow-y-auto">
+                  {items.map((item) => {
+                    const value = item.slug || item.name || item.month || item.study_mode || item;
+                    const display = item.name || item.slug || item.month || item.study_mode || item;
+                    return (
+                      <label
+                        key={item.id || value}
+                        className="flex items-center space-x-3 py-2.5 cursor-pointer hover:bg-blue-50 rounded-lg px-3 transition-all group"
+                      >
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                          checked={selectedFilters[key] === value}
+                          onChange={() => {
+                            handleFilterChange(key, value);
+                            setShowMobileFilter(false);
+                          }}
+                        />
+                        <span className="text-gray-700 text-sm font-medium group-hover:text-blue-700">
+                          {display}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ))}
         </div>
-        )}
+      </div>
 
-        {/* Mobile Filter Drawer */}
-        {showMobileFilter && (
-          <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex">
-            <div className="w-4/5 max-w-xs bg-white p-5 rounded-r-xl shadow-xl h-full overflow-y-auto animate-slide-in-left space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-gray-800">Filters</h2>
-                <button
-                  className="text-2xl font-bold text-gray-600"
-                  onClick={() => setShowMobileFilter(false)}
-                >
-                  ×
-                </button>
-              </div>
-
-              <button
-                onClick={() => {
-                  handleReset();
-                  setShowMobileFilter(false);
-                }}
-                className="text-sm text-blue-600 hover:underline"
-              >
-                Reset All Filters
-              </button>
-
-             {Object.entries(filters).map(([key, items]) => (
-      <div key={key}>
-        <div
-          className="flex justify-between items-center cursor-pointer font-semibold text-gray-800 text-[16px]"
-          onClick={() => toggleFilter(key)}
-        >
-          <span>
-            {key
-              .replace(/([A-Z])/g, " $1")
-              .replace(/^./, (s) => s.toUpperCase())}
-          </span>
-          <FiChevronDown
-            className={`text-xl transform transition-transform duration-300 ${
-              openFilters[key] ? "rotate-180" : ""
-            }`}
-          />
-        </div>
-
-        {openFilters[key] && (
-          <div className="mt-3 pl-1 space-y-3 max-h-56 overflow-y-auto">
-            {items.map((item) => {
-              const value = item.slug || item.name || item.month || item.study_mode || item;
-              const display = item.name || item.slug || item.month || item.study_mode || item;
-              return (
-                <label
-                  key={item.id || value}
-                  className="flex items-center gap-3 text-[15px] text-gray-700"
-                >
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 accent-blue-600"
-                    checked={selectedFilters[key] === value}
-                    onChange={() => {
-                      handleFilterChange(key, value);
-                      setShowMobileFilter(false);
-                    }}
-                  />
-                  <span>{display}</span>
-                </label>
-              );
-            })}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div
-              className="flex-1"
-              onClick={() => setShowMobileFilter(false)}
-            ></div>
-          </div>
-        )}
+      <div className="flex-1" onClick={() => setShowMobileFilter(false)}></div>
+    </div>
+  )}
 
         {/* Course List Section */}
-        <div className="flex-1 space-y-6">
-          {/* Top Search Box */}
-          <div className="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md">
-            <p className="text-lg font-semibold text-gray-700">
-              🎓 Found <span className="text-blue-700 font-bold">{totalCourses}</span>{" "}
-              programs
-            </p>
-            <p className="text-gray-600 mt-1">
-              Explore top private & public universities in Malaysia, including
-              course details, intake dates, and durations.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-3 ">
-              <input
-                type="text"
-                placeholder="Search Universities"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className=" flex-grow border rounded-md px-3 py-2 w-xl"
-              />
-              <button className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg shadow-md" onClick={() => handleSearch(search)}>
-                Search
-              </button>
-              <button
-                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow-md"
-                onClick={handleReset}
-              >
-                Reset
-              </button>
+        {/* New Modern Header */}
+        <div className="bg-gradient-to-br from-blue-50 to-white p-4 min-h-screen">
+      <div className="bg-gradient-to-br from-blue-50 to-white">
+  <div className="max-w-[1600px] mx-auto px-4 py-6">
+  
+  {/* ✅ Header SABSE UPAR - FILTER SE PEHLE */}
+  <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-4">
+    <div className="flex flex-col gap-3">
+      {/* Top Row - Title & Search */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Find Your Perfect Course</h1>
+          <p className="text-sm text-gray-600">
+            Showing <span className="font-semibold text-blue-600">{totalCourses}</span> courses available in Malaysia
+          </p>
+        </div>
 
-              {/* Expandable Info Box */}
-              <div className="bg-blue-50 border flex-grow border-blue-200 rounded-xl p-5 mb-1 max-w-6xl mx-auto shadow-sm mt-4">
-                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                  {showMore ? infoText : infoText.slice(0, 180) + "..."}
-                </p>
-                <button
-                  onClick={toggleShowMore}
-                  className="mt-3 text-blue-600 text-sm font-semibold hover:underline focus:outline-none"
-                >
-                  {showMore ? "Show Less" : "Show More"}
-                </button>
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 lg:w-96">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search courses, universities..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch(search);
+                }
+              }}
+              className="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors font-medium"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Sort & View Mode Row */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pt-3 border-t border-gray-200">
+        {/* Left: Sort By Dropdown */}
+        <div className="flex items-center gap-3">
+          <ArrowUpDown className="w-5 h-5 text-gray-600" />
+          <span className="text-sm font-semibold text-gray-700">Sort by:</span>
+          <select
+            className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors font-medium text-sm bg-white cursor-pointer hover:border-gray-300"
+          >
+            <option value="relevance">Most Relevant</option>
+            <option value="rating">Highest Rated</option>
+            <option value="fee-low">Fee: Low to High</option>
+            <option value="fee-high">Fee: High to Low</option>
+            <option value="duration">Duration</option>
+          </select>
+        </div>
+
+        {/* Right: List/Grid Toggle - ✅ FUNCTIONAL */}
+        <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-2 rounded-lg transition-all duration-200 ${
+              viewMode === 'list'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+            title="List View"
+          >
+            <List className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-2 rounded-lg transition-all duration-200 ${
+              viewMode === 'grid'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+            title="Grid View"
+          >
+            <LayoutGrid className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <button 
+          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md font-semibold transition-all"
+          onClick={() => handleSearch(search)}
+        >
+          Search
+        </button>
+        <button
+          className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg shadow-md font-semibold transition-all"
+          onClick={handleReset}
+        >
+          Reset
+        </button>
+      </div>
+
+      {/* Expandable Info Box */}
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mt-2 shadow-sm">
+        <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+          {showMore ? infoText : infoText.slice(0, 180) + "..."}
+        </p>
+        <button
+          onClick={toggleShowMore}
+          className="mt-3 text-blue-600 text-sm font-semibold hover:underline focus:outline-none"
+        >
+          {showMore ? "Show Less" : "Show More"}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {/* ✅ FILTER & COURSES - NEECHE */}
+  {/* <div className="flex flex-col md:flex-row gap-6"> */}
+  <div className="flex flex-col lg:flex-row gap-6 items-start">
+    {/* Mobile Filter Button */}
+    {/* <div className="md:hidden flex justify-end"> */}
+    {/* Mobile Filter Button */}
+<div className="lg:hidden flex justify-end mb-4">
+      <button
+        className="bg-blue-700 text-white px-4 py-2 rounded-xl shadow-md"
+        onClick={() => setShowMobileFilter(true)}
+      >
+        Filters
+      </button>
+    </div>
+
+    {/* Filter Panel */}
+    <>
+    {loading ? <FilterPanelSkeleton /> : (
+      // <div className="hidden lg:block w-[280px] min-w-[280px] flex-shrink-0 bg-white border border-gray-200 p-5 rounded-xl shadow-md space-y-6 text-base">
+      <div className="hidden lg:block w-[280px] min-w-[280px] flex-shrink-0 bg-white border border-gray-200 p-5 rounded-xl shadow-md space-y-6 text-base sticky top-4 self-start max-h-[calc(100vh-2rem)] overflow-y-auto">
+     <div className="flex justify-between items-center mb-2">
+      <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+        <Filter className="w-5 h-5 text-blue-600" />
+        Filters
+        
+          <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+            {activeFilterCount}
+          </span>
+    
+      </h2>
+      {activeFilterCount > 0 && (
+        <button
+          onClick={handleReset}
+          className="text-sm text-blue-600 hover:text-blue-700 font-semibold transition-colors hover:underline"
+        >
+          Clear All
+        </button>
+      )}
+    </div>
+
+    {/* Filter Options */}
+    <div className="space-y-2">
+      {Object.entries(filters).map(([key, items]) => (
+        <div key={key} className="border-b border-gray-100 last:border-0 pb-2 last:pb-0">
+          <button
+            onClick={() => toggleFilter(key)}
+            className="w-full flex items-center justify-between py-2 text-left hover:bg-gray-50 rounded-lg px-2 transition-colors"
+          >
+            <span className="font-semibold text-gray-900 capitalize flex items-center gap-2">
+              {key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}
+              {selectedFilters[key] && (
+                <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                  1
+                </span>
+              )}
+            </span>
+            {openFilters[key] ? (
+              <ChevronUp className="w-5 h-5 text-gray-600" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-gray-600" />
+            )}
+          </button>
+
+          {openFilters[key] && (
+            <div className="mt-2 space-y-2 pl-2 max-h-56 overflow-y-auto">
+              {items.map((item) => {
+                const value = item.slug || item.name || item.month || item.study_mode || item;
+                const display = item.name || item.slug || item.month || item.study_mode || item;
+                return (
+                  <label
+                    key={item.id || value}
+                    className="flex items-center gap-3 py-2 cursor-pointer hover:bg-blue-50 rounded-lg px-3 transition-all duration-200 group"
+                  >
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                      checked={selectedFilters[key] === value}
+                      onChange={() => handleFilterChange(key, value)}
+                    />
+                    <span className="text-gray-700 text-sm font-medium group-hover:text-blue-700 transition-colors">
+                      {display}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+      </div>
+    )}
+     </>
+
+    {/* Course List */}
+{/* <div className="flex-1 min-w-0 space-y-6"> */}
+<div className="flex-1 min-w-0 max-w-full space-y-6">
+      {/* Active Filters Bar */}
+      {Object.values(selectedFilters).some((filter) => filter !== "") && (
+        <div className="bg-transparent border border-gray-200 rounded-xl p-2 mb-2 shadow-sm">
+          {/* ... active filters code ... */}
+        </div>
+      )}
+
+      {/* Course Cards */}
+      {/* Course Cards with Grid/List Toggle */}
+{loading ? (
+  <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "space-y-4"}>
+    {[...Array(5)].map((_, i) => <CourseCardSkeleton key={i} />)}
+  </div>
+) : (
+  <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "space-y-4"}>
+    {coursesData.map((course, i) => (
+      <div 
+        key={i} 
+        className={`bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:border-blue-300 group relative ${
+          viewMode === 'grid' ? 'flex flex-col h-full' : 'mb-6 w-full'
+        }`}
+      >
+        <div className="p-5">
+          {/* University Header */}
+          <div className={`flex ${viewMode === 'grid' ? 'flex-col' : 'items-start justify-between'} gap-3 mb-4`}>
+            <div className={`flex gap-4 ${viewMode === 'grid' ? 'w-full' : 'flex-1'}`}>
+              {/* Logo */}
+              <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-200 shadow-sm overflow-hidden">
+                <img 
+                  src={`https://www.educationmalaysia.in/${course.university?.logo_path}`}
+                  alt={course.university?.name} 
+                  className="w-full h-full object-contain p-2" 
+                />
               </div>
+
+              {/* University Info */}
+              <div className="flex-1 min-w-0">
+              <h3 
+  onClick={() => handleUniversityClick(course.university?.name)}
+  className="text-lg font-bold text-gray-900 mb-1 hover:text-blue-600 cursor-pointer transition-colors line-clamp-1"
+>
+  {course.university?.name}
+</h3>
+                <div className="flex items-center text-gray-600 text-sm mb-2">
+                  <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                  <span className="line-clamp-1">{`${course.university?.city}, ${course.university?.state}`}</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
+                  <div className="flex items-center">
+                    <Building className="w-4 h-4 mr-1" />
+                    <span>{course.university?.inst_type || "Private"}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <BookOpen className="w-4 h-4 mr-1" />
+                    <span>{course.university?.programs_count} Courses</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Globe className="w-4 h-4 mr-1" />
+                    <span>Rankings: {course.university?.rank || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Rating & Heart */}
+            <div className={`flex items-center gap-3 flex-shrink-0 ${viewMode === 'grid' ? 'w-full justify-between mt-2' : ''}`}>
+              <div className="flex items-center gap-1 bg-gradient-to-br from-amber-50 to-yellow-50 px-3 py-2 rounded-lg border border-amber-200 shadow-sm">
+                <span className="text-lg font-bold text-gray-900">{course.university?.rating || "N/A"}</span>
+                <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+              </div>
+              <button className="p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-red-300">
+                <Heart className="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" />
+              </button>
             </div>
           </div>
 
-          {/* Active Filters Bar */}
-          {Object.values(selectedFilters).some((filter) => filter !== "") && (
-            <div className="bg-transparent border border-gray-200 rounded-xl p-2  mb-2 -mt-3 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(selectedFilters).map(([key, value]) => {
-                    if (value) {
-                      return (
-                        <div
-                          key={key}
-                          className="flex items-center gap-2 px-3 py-1 bg-gray-100 border border-gray-300 rounded-full text-sm text-gray-700"
-                        >
-                          <span>{value}</span>
-                          <button
-                            onClick={() => handleFilterChange(key, value)}
-                            className="text-gray-500 hover:text-gray-700 font-bold text-lg leading-none"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })}
+          {/* Course Details Section */}
+          <div className="border-t border-gray-200 pt-3 mb-3">
+            {/* Course Title */}
+            <h4 className="text-base font-bold text-blue-600 mb-3 hover:text-blue-700 cursor-pointer transition-colors line-clamp-2">
+              {course.course_name}
+            </h4>
+
+            
+
+            {/* Course Specs Grid */}
+            <div className={`grid ${viewMode === 'grid' ? 'grid-cols-2' : 'grid-cols-4'} gap-2 mb-3`}>
+              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col justify-center">
+                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Mode</p>
+                <p className="text-sm font-bold text-gray-900 line-clamp-1">{course.study_mode || "N/A"}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col justify-center">
+                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Duration</p>
+                <p className="text-sm font-bold text-gray-900 line-clamp-1">{course.duration || "N/A"}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col justify-center">
+                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Intakes</p>
+                <p className="text-sm font-bold text-gray-900 line-clamp-1">{course.intake || "N/A"}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col justify-center">
+                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Fee</p>
+                <p className="text-sm font-bold text-gray-900 line-clamp-1">{course.fee || "N/A"}</p>
+              </div>
+            </div>
+          </div>
+          {/* Accreditation Badges - ALWAYS SHOW */}
+<div className="flex flex-wrap gap-2 mb-3">
+  <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-green-300">
+    Malaysian Medical Council
+  </span>
+  <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-green-300">
+    MQA
+  </span>
+</div>
+          
+
+          {/* Action Buttons */}
+          <div className={`flex ${viewMode === 'grid' ? 'flex-col' : 'items-center'} gap-3`}>
+            <button
+              onClick={() => !appliedCourses.has(course.id) && handleApplyNow(course)}
+              className={`${viewMode === 'grid' ? 'w-full' : 'flex-1'} font-bold py-2.5 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm ${
+                appliedCourses.has(course.id) 
+                  ? "bg-gray-400 text-white cursor-not-allowed" 
+                  : "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800"
+              }`}
+              disabled={appliedCourses.has(course.id)}
+            >
+              {appliedCourses.has(course.id) ? "Applied" : "Apply Now"}
+            </button>
+            <button
+              onClick={() => handleUniversityClick(course.university?.name)}
+              className={`${viewMode === 'grid' ? 'w-full' : 'flex-1'} bg-white text-gray-800 font-bold py-2.5 px-4 rounded-lg border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md text-sm`}
+            >
+              View Details
+            </button>
+            <button
+              onClick={() => handleAddToCompare(course)}
+              className={`${viewMode === 'grid' ? 'w-full' : ''} font-bold py-2.5 px-4 rounded-lg border-2 transition-all duration-200 shadow-sm hover:shadow-md bg-white text-blue-600 border-blue-300 hover:border-blue-400 hover:bg-blue-50 text-sm`}
+            >
+              Compare
+            </button>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+   
+      {/* ⬇️ YAHA ADD KARO ⬇️ */}
+      {/* Comparison Bottom Panel */}
+      {comparisonCourses.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-40">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-4 flex-1 overflow-x-auto">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="font-bold text-gray-900">Compare Courses</span>
+                  <span className="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">
+                    {comparisonCourses.length}
+                  </span>
                 </div>
+
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {comparisonCourses.map((course) => (
+                    <div
+                      key={course.id}
+                      className="flex items-center gap-2 bg-blue-50 border-2 border-blue-200 rounded-xl px-4 py-2 flex-shrink-0"
+                    >
+                      <div className="text-sm">
+                        <p className="font-semibold text-gray-900 truncate max-w-[200px]">
+                          {course.course_name}
+                        </p>
+                        <p className="text-xs text-gray-600">{course.university?.name}</p>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveFromCompare(course.id)}
+                        className="text-gray-600 hover:text-red-600 transition-colors"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 flex-shrink-0">
                 <button
-                  onClick={handleReset}
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  onClick={handleClearAll}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-900 font-semibold transition-colors"
                 >
                   Clear All
                 </button>
+                <button
+                  onClick={handleCompare}
+                  disabled={comparisonCourses.length < 2}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all shadow-md ${
+                    comparisonCourses.length >= 2
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-lg'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Compare Now
+                  <ArrowRight className="w-5 h-5" />
+                </button>
               </div>
             </div>
-          )}
+          </div>
+        </div>   
+      )}
 
-          {/* Course Cards */}
-          {loading ? (
-            <div className="space-y-6">
-              {[...Array(5)].map((_, i) => <CourseCardSkeleton key={i} />)}
-            </div>
-          ) : (
-            coursesData.map((course, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl border border-slate-200 shadow-md hover:shadow-blue-100 transition-all duration-300 group flex flex-col md:flex-row justify-between overflow-hidden"
-              >
-                <div className="p-6 flex-1">
-                  {/* University Info */}
-                  <div className="flex gap-5">
-                    {/* Logo */}
-                    <div className="w-[100px] h-[100px] flex-shrink-0 border border-slate-200 rounded-xl flex items-center justify-center p-2 bg-white">
-                      <img
-                        src={`https://www.educationmalaysia.in/${course.university?.logo_path}`}
-                        alt={`${course.university?.name} Logo`}
-                        className="object-contain w-full h-full"
-                      />
-                    </div>
-
-                    {/* University Info Block */}
-                    <div className="flex-1">
-                      <h3
-                        onClick={() =>
-                          handleUniversityClick(course.university?.name)
-                        }
-                        className="text-xl font-bold text-slate-800 cursor-pointer hover:text-blue-600"
-                      >
-                        {course.university?.name}
-                      </h3>
-                      <div className="text-sm text-slate-500 flex items-center mt-1">
-                        <MapPin size={14} className="mr-1.5" />
-                        <span>{`${course.university?.city}, ${course.university?.state}`}</span>
-                      </div>
-
-                      {/* University Stats */}
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-sm text-slate-600">
-                        <div className="flex items-center gap-1.5">
-                          <Building size={14} className="text-slate-400" />
-                          <span>
-                            {course.university?.inst_type ||
-                              "Private Institution"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <BookOpen size={14} className="text-slate-400" />
-                          <span>{course.university?.programs_count} Courses</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Globe size={14} className="text-slate-400" />
-                          <span>
-                            Rankings: {course.university?.rank || "N/A"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Course Details */}
-                  <div className="border-t border-slate-100 mt-5 pt-5">
-                    <h4 className="text-blue-700 text-lg font-semibold mb-8 -mt-9">
-                      {course.course_name}
-                    </h4>
-
-                    {/* Course Specs */}
-                    <div className="flex flex-wrap md:flex-nowrap items-center justify-start divide-x divide-slate-300 text-sm text-slate-700 mt-4">
-                      {/* Mode */}
-                      <div className="flex-1 px-4">
-                        <p className="text-xs text-slate-400">Mode</p>
-                        <p className="font-medium">
-                          {course.study_mode || "N/A"}
-                        </p>
-                      </div>
-
-                      {/* Duration */}
-                      <div className="flex-1 px-4">
-                        <p className="text-xs text-slate-400">Duration</p>
-                        <p className="font-medium">{course.duration || "N/A"}</p>
-                      </div>
-
-                      {/* Intakes */}
-                      <div className="flex-1 px-4">
-                        <p className="text-xs text-slate-400">Intakes</p>
-                        <p className="font-medium">{course.intake || "N/A"}</p>
-                      </div>
-
-                      {/* Fee Structure */}
-                      <div className="flex-1 px-4">
-                        <p className="text-xs text-slate-400">Fee Structure</p>
-                        <p className="font-medium">{course.fee || "N/A"}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Sidebar */}
-                <div className="bg-slate-50/60 border-l border-slate-100 w-full md:max-w-[220px] px-6 py-6 flex flex-col items-center justify-between gap-4">
-                  <div className="flex flex-col items-center gap-2">
-                    <p className="text-xl font-bold text-black flex items-center">
-                      {course.university?.rating || "N/A"}{" "}
-                      <Star className="text-yellow-400 ml-1" size={18} />
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-center gap-3 w-full">
-                    
-                    <button
-        onClick={() => !appliedCourses.has(course.id) && handleApplyNow(course.id)}
-        className={`w-full px-4 py-2 rounded-lg text-sm font-semibold transition-all 
-          ${appliedCourses.has(course.id) ? "bg-blue-600 text-white cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 text-white"}
-        `}
-        disabled={appliedCourses.has(course.id)} // disable after applied
-      >
-        {appliedCourses.has(course.id) ? "Applied" : "Apply Now"}
-      </button>
-
-                    <button
-                      onClick={() =>
-                        handleUniversityClick(course.university?.name)
-                      }
-                      className="w-full border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-100 transition-all"
-                    >
-                      View Detail
-                    </button>
-                    <button
-                      className="w-full bg-slate-100 hover:bg-slate-200 text-blue-600 px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-                      onClick={() => {
-                        if (compareList.length < 3) {
-                          setCompareList([...compareList, course]);
-                          setShowCompareModal(true);
-                        } else {
-                          alert("You can compare up to 3 universities only");
-                        }
-                      }}
-                    >
-                      Compare
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-
-      <div className="flex justify-center items-center gap-3 mt-6 flex-wrap">
+      {/* Pagination */}
+      {/* <div className="flex justify-center items-center gap-3 mt-6 flex-wrap max-w-full">
+        
+      </div> */}
+      {/* Pagination */}
+<div className="flex justify-center items-center gap-3 mt-6 flex-wrap max-w-full">
   {paginationLinks.map((link, idx) => {
     const isDisabled = link.url === null;
     const isActive = !!link.active;
@@ -853,7 +1067,7 @@ Our mission is to simplify`;
     // Icon check
     let content = label;
     if (label.includes("Previous")) {
-       content = <HiChevronLeft size={20} />;
+      content = <HiChevronLeft size={20} />;
     } else if (label.includes("Next")) {
       content = <HiChevronRight size={20} />;
     }
@@ -866,7 +1080,7 @@ Our mission is to simplify`;
             const url = new URL(link.url);
             const page = url.searchParams.get('page');
             if (page) {
-              fetchCourses(parseInt(page, 10), selectedFilters, search);
+              setCurrentPage(parseInt(page, 10));
               window.scrollTo({ top: 0, behavior: "smooth" });
             }
           }
@@ -882,11 +1096,217 @@ Our mission is to simplify`;
     );
   })}
 </div>
+    </div>
+  </div>
+  </div> 
+</div> 
+</div>
 
-
-        </div>
+      {showComparisonModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto my-auto relative">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-4 rounded-t-2xl flex justify-between items-center sticky top-0 z-10">
+        <h2 className="text-xl font-bold">Course Comparison</h2>
+        <button
+          onClick={() => setShowComparisonModal(false)}
+          className="text-white hover:text-gray-200 transition-colors bg-white bg-opacity-20 rounded-lg p-2 flex-shrink-0"
+          aria-label="Close"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
-    </>
+
+      {/* Table Container */}
+      <div className="p-4 overflow-x-auto">
+        <table className="w-full border-collapse min-w-[700px]">
+          <thead className="sticky top-14 bg-white z-10 shadow-sm">
+            <tr className="bg-gray-100 border-b-2 border-gray-300">
+              <th className="text-left p-3 font-bold text-gray-900 w-36 min-w-[144px] text-sm bg-gray-100">
+                Feature
+              </th>
+              {comparisonCourses.map((course) => (
+                <th key={course.id} className="p-3 text-left min-w-[260px]">
+                  <h3 className="font-bold text-gray-900 mb-1 text-sm leading-tight line-clamp-2">
+                    {course.course_name}
+                  </h3>
+                  <p className="text-xs font-normal text-gray-600 line-clamp-1">
+                    {course.university?.name}
+                  </p>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {/* Rating Row */}
+            <tr className="border-b border-gray-200 hover:bg-gray-50">
+              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+                <div className="flex items-center gap-2">
+                  <Star className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  <span>Rating</span>
+                </div>
+              </td>
+              {comparisonCourses.map((course) => (
+                <td key={course.id} className="p-3">
+                  <div className="flex items-center gap-1">
+                    <span className="text-base font-bold text-gray-900">
+                      {course.university?.rating || "N/A"}
+                    </span>
+                    <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  </div>
+                </td>
+              ))}
+            </tr>
+
+            {/* Duration Row */}
+            <tr className="border-b border-gray-200 hover:bg-gray-50">
+              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  <span>Duration</span>
+                </div>
+              </td>
+              {comparisonCourses.map((course) => (
+                <td key={course.id} className="p-3 font-medium text-gray-900 text-sm">
+                  {course.duration || "N/A"}
+                </td>
+              ))}
+            </tr>
+
+            {/* Fee Row */}
+            <tr className="border-b border-gray-200 hover:bg-gray-50">
+              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  <span>Fee</span>
+                </div>
+              </td>
+              {comparisonCourses.map((course) => (
+                <td key={course.id} className="p-3 font-medium text-gray-900 text-sm">
+                  {course.fee || "N/A"}
+                </td>
+              ))}
+            </tr>
+
+            {/* Intake Row */}
+            <tr className="border-b border-gray-200 hover:bg-gray-50">
+              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  <span>Intake</span>
+                </div>
+              </td>
+              {comparisonCourses.map((course) => (
+                <td key={course.id} className="p-3 font-medium text-gray-900 text-sm">
+                  {course.intake || "N/A"}
+                </td>
+              ))}
+            </tr>
+
+            {/* Study Mode Row */}
+            <tr className="border-b border-gray-200 hover:bg-gray-50">
+              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+                Study Mode
+              </td>
+              {comparisonCourses.map((course) => (
+                <td key={course.id} className="p-3 font-medium text-gray-900 text-sm">
+                  {course.study_mode || "N/A"}
+                </td>
+              ))}
+            </tr>
+
+            {/* Location Row */}
+            <tr className="border-b border-gray-200 hover:bg-gray-50">
+              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-red-600 flex-shrink-0" />
+                  <span>Location</span>
+                </div>
+              </td>
+              {comparisonCourses.map((course) => (
+                <td key={course.id} className="p-3 text-gray-700 text-sm">
+                  {`${course.university?.city}, ${course.university?.state}`}
+                </td>
+              ))}
+            </tr>
+
+            {/* University Type Row */}
+            <tr className="border-b border-gray-200 hover:bg-gray-50">
+              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+                University Type
+              </td>
+              {comparisonCourses.map((course) => (
+                <td key={course.id} className="p-3 text-gray-700 text-sm">
+                  {course.university?.inst_type || "N/A"}
+                </td>
+              ))}
+            </tr>
+
+            {/* Ranking Row */}
+            <tr className="border-b border-gray-200 hover:bg-gray-50">
+              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+                <div className="flex items-center gap-2">
+                  <Award className="w-4 h-4 text-purple-600 flex-shrink-0" />
+                  <span>Ranking</span>
+                </div>
+              </td>
+              {comparisonCourses.map((course) => (
+                <td key={course.id} className="p-3 text-gray-700 text-sm">
+                  {course.university?.rank || "N/A"}
+                </td>
+              ))}
+            </tr>
+
+            {/* Actions Row */}
+            <tr className="bg-gray-50">
+              <td className="p-3 font-semibold text-gray-700 text-sm">
+                Actions
+              </td>
+              {comparisonCourses.map((course) => (
+                <td key={course.id} className="p-3">
+                  <button 
+                    onClick={() => handleApplyNow(course)}
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-2 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg text-sm"
+                  >
+                    Apply Now
+                  </button>
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-gray-200 sticky bottom-0 bg-white">
+        <button
+          onClick={() => setShowComparisonModal(false)}
+          className="w-full px-5 py-2.5 border-2 border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition-colors text-sm"
+        >
+          Close Comparison
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+{/* Application Modal */}
+{showApplicationModal && selectedCourse && (
+  <ApplicationModal
+    course={{
+      title: selectedCourse.course_name,
+      university: {
+        name: selectedCourse.university?.name || "University"
+      }
+    }}
+    onClose={() => {
+      setShowApplicationModal(false);
+      setSelectedCourse(null);
+    }}
+  />
+)}
+
+</>   
+
   );
 };
 

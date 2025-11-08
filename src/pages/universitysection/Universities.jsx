@@ -1,11 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from "react-router-dom";
 import api from '../../api';
 import TrendingCourses from '../../components/TrendingCourses';
-import { FaUniversity, FaGraduationCap, FaGlobe, FaSchool, FaCheckCircle, FaBriefcase } from 'react-icons/fa';
-import { Home, Layers, Loader2 } from "lucide-react";
+import { FaUniversity, FaGraduationCap, FaGlobe, FaSchool, FaCheckCircle, FaBriefcase, FaArrowRight } from 'react-icons/fa';
+import { Home, Layers, Loader2, Shield, Award, CheckCircle2, BookOpen, Users, FileCheck } from "lucide-react";
 import SEO from '../../components/SEO';
+
 // Format HTML helper function
+//// Format HTML helper function - COMPLETELY FIXED VERSION
 const formatHTML = (html) => {
   if (!html) return "";
 
@@ -19,13 +22,12 @@ const formatHTML = (html) => {
   decoded = decoded.replace(/style="[^"]*"/gi, "");
   decoded = decoded.replace(/&nbsp;/gi, " ");
 
- 
+  // Headings formatting
   decoded = decoded.replace(
     /<h([1-3])(.*?)>([^<]*?)<\/h\1>/gi,
     (_m, level, attributes, content) => {
-     
       if (level === "1") {
-        return `<h1 class="text-2xl md:text-3xl font-bold text-gray-800 pb-2 mt-8 mb-4">${content.trim()}</h1>`;
+        return `<h1 class="text-2xl md:text-3xl font-bold text-gray-800 pb-2 mt-8 mb-3">${content.trim()}</h1>`;
       } else if (level === "2") {
         return `<h2 class="text-xl md:text-2xl font-bold text-gray-800 pb-2 mt-6 mb-3">${content.trim()}</h2>`;
       }
@@ -37,53 +39,223 @@ const formatHTML = (html) => {
   decoded = decoded.replace(/<strong>(.*?)<\/strong>/gi, `<h4 class="text-lg font-semibold mb-2 mt-4 text-gray-700">$1</h4>`);
   decoded = decoded.replace(/<b>(.*?)<\/b>/gi, `<h4 class="text-lg font-semibold mb-2 mt-4 text-gray-700">$1</h4>`);
   
-  // ✅ New: Add Tailwind classes to p tags for better spacing
+  // Paragraph styling
   decoded = decoded.replace(/<p>/g, '<p class="text-gray-700 leading-relaxed mb-4">');
 
-  // ✅ Table styling (existing)
+  // ============================================
+  // COMPLETELY FIXED TABLE HEADER AUTO-DETECTION
+  // ============================================
+  
+  // Remove all existing thead tags first (clean slate)
+  decoded = decoded.replace(/<thead[^>]*>[\s\S]*?<\/thead>/gi, '');
+
+  // Process each table individually
   decoded = decoded.replace(
-    /<table(.*?)>/g,
-    `<div class="overflow-auto rounded-xl shadow-sm border border-gray-200 my-6"><table class="w-full border-collapse" $1>`
-  );
-  decoded = decoded.replace(/<\/table>/g, "</table></div>");
-  decoded = decoded.replace(
-    /<thead>/g,
-    '<thead class="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-left text-sm">'
-  );
-  decoded = decoded.replace(
-    /<th>/g,
-    '<th class="px-4 py-3 font-medium whitespace-nowrap">'
-  );
-  decoded = decoded.replace(/<tr/g, '<tr class="border-b border-gray-200 even:bg-blue-50/50"');
-  decoded = decoded.replace(
-    /<td>/g,
-    '<td class="px-4 py-3 text-sm text-gray-700">'
+    /<table([^>]*)>([\s\S]*?)<\/table>/gi,
+    (fullMatch, tableAttrs, tableContent) => {
+      
+      // Find first data row
+      const firstRowMatch = tableContent.match(/<tr[^>]*>([\s\S]*?)<\/tr>/i);
+      if (!firstRowMatch) return fullMatch;
+      
+      const firstRowContent = firstRowMatch[1];
+      
+      // Count actual TD cells in first row (ignore TH)
+      const tdMatches = firstRowContent.match(/<td[^>]*>[\s\S]*?<\/td>/gi) || [];
+      const columnCount = tdMatches.length;
+      
+      console.log('Column count:', columnCount);
+      console.log('First row:', firstRowContent.substring(0, 200));
+      
+      // Extract text content to identify table type
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = tableContent.toLowerCase();
+      const textContent = tempDiv.textContent || '';
+      
+      let headers = [];
+      
+      // Determine headers based on CONTENT + COLUMN COUNT
+      if (textContent.includes('university of malaya') || 
+          textContent.includes('usm') || 
+          textContent.includes('beach valley') ||
+          textContent.includes('minden')) {
+        // PUBLIC UNIVERSITIES TABLE
+        if (columnCount === 4) {
+          headers = ['NO.', 'UNIVERSITY LOGO', 'NAME & ADDRESS', 'YEAR OF ESTABLISHMENT'];
+        } else if (columnCount === 3) {
+          headers = ['NO.', 'UNIVERSITY LOGO', 'NAME & ADDRESS'];
+        } else {
+          headers = ['NO.', 'DETAILS', 'YEAR', 'LOCATION'];
+        }
+      } 
+      else if (textContent.includes('multimedia university') || 
+               textContent.includes('uniten') || 
+               textContent.includes('cyberjaya') ||
+               textContent.includes('unirazak')) {
+        // PRIVATE UNIVERSITIES TABLE
+        if (columnCount === 4) {
+          headers = ['NO.', 'NAME OF UNIVERSITY', 'YEAR ESTABLISHED', 'LOCATION'];
+        } else if (columnCount === 3) {
+          headers = ['NO.', 'UNIVERSITY NAME', 'DETAILS'];
+        } else {
+          headers = ['NO.', 'UNIVERSITY', 'YEAR', 'LOCATION', 'INFO'];
+        }
+      }
+      else if (textContent.includes('monash') || 
+               textContent.includes('curtin') || 
+               textContent.includes('australia') ||
+               textContent.includes('branch campus')) {
+        // FOREIGN UNIVERSITIES TABLE
+        if (columnCount === 5) {
+          headers = ['NO.', 'BRANCH CAMPUS NAME', 'YEAR ESTABLISHED', 'LOCATION IN MALAYSIA', 'COUNTRY OF ORIGIN'];
+        } else if (columnCount === 4) {
+          headers = ['NO.', 'CAMPUS NAME', 'YEAR', 'LOCATION'];
+        } else {
+          headers = ['NO.', 'UNIVERSITY', 'DETAILS'];
+        }
+      }
+      else {
+        // FALLBACK - Generic headers
+        if (columnCount === 4) {
+          headers = ['NO.', 'NAME', 'YEAR', 'LOCATION'];
+        } else if (columnCount === 3) {
+          headers = ['NO.', 'INFORMATION', 'DETAILS'];
+        } else if (columnCount === 5) {
+          headers = ['NO.', 'NAME', 'YEAR', 'LOCATION', 'COUNTRY'];
+        } else {
+          for (let i = 1; i <= columnCount; i++) {
+            headers.push(`COLUMN ${i}`);
+          }
+        }
+      }
+      
+      // Build beautiful header
+      const headerHTML = `
+        <thead style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
+          <tr style="background: transparent;">
+            ${headers.map(h => `<th style="color: white; padding: 1.25rem 1.5rem; text-align: left; font-weight: 700; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; border: none; white-space: nowrap;">${h}</th>`).join('')}
+          </tr>
+        </thead>
+      `;
+      
+      // Insert header properly
+      let newContent = tableContent;
+      if (newContent.includes('<tbody>')) {
+        newContent = newContent.replace('<tbody>', headerHTML + '<tbody>');
+      } else {
+        newContent = headerHTML + newContent;
+      }
+      
+      return `<table${tableAttrs}>${newContent}</table>`;
+    }
   );
 
-  // ✅ Checkbox (existing)
+  // ============================================
+  // TABLE WRAPPER & BEAUTIFUL STYLING
+  // ============================================
+  
   decoded = decoded.replace(
-    /<input[^>]*type=["']checkbox["'][^>]*>/gi,
-    `<span class="inline-block w-4 h-4 rounded border border-gray-400 mr-2 bg-white"></span>`
+    /<table(.*?)>/gi,
+    `<div style="margin: 2rem 0; border-radius: 1rem; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); padding: 0.25rem;">
+      <div style="overflow-x: auto;">
+        <div style="background: white; border-radius: 0.75rem; overflow: hidden;">
+          <table style="width: 100%; border-collapse: collapse;" $1>`
+  );
+  
+  decoded = decoded.replace(/<\/table>/gi, 
+    `</table>
+        </div>
+      </div>
+    </div>`
   );
 
-  // ✅ Bullet & Numbered lists (existing)
+  // Ensure thead styling
   decoded = decoded.replace(
-    /<ul>/g,
-    '<ul class="list-disc pl-6 space-y-2 text-gray-800">'
+    /<thead(?![^>]*style=)/gi,
+    '<thead style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);"'
   );
+
+  // Ensure th styling
   decoded = decoded.replace(
-    /<ol>/g,
-    '<ol class="list-decimal pl-6 space-y-2 text-gray-800">'
+    /<th(?![^>]*style=)/gi,
+    '<th style="color: white; padding: 1.25rem 1.5rem; text-align: left; font-weight: 700; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; border: none;"'
   );
+
+  // Table body
+  decoded = decoded.replace(/<tbody[^>]*>/gi, '<tbody>');
+
+  // Alternating row colors
+  let rowCounter = 0;
   decoded = decoded.replace(
-    /<li>/g,
-    '<li class="mb-1">'
+    /<tbody[^>]*>[\s\S]*?<\/tbody>/gi,
+    (tbody) => {
+      rowCounter = 0;
+      return tbody.replace(
+        /<tr(?![^>]*style=)/gi,
+        () => {
+          const bgColor = rowCounter % 2 === 0 ? '#f9fafb' : '#ffffff';
+          const hoverColor = '#eff6ff';
+          rowCounter++;
+          return `<tr style="background-color: ${bgColor}; border-bottom: 1px solid #e5e7eb; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='${hoverColor}'" onmouseout="this.style.backgroundColor='${bgColor}'"`;
+        }
+      );
+    }
   );
+
+  // Table cells base styling
+  decoded = decoded.replace(
+    /<td(?![^>]*style=)/gi,
+    '<td style="padding: 1.25rem 1.5rem; color: #1f2937; font-size: 0.95rem; border: none; vertical-align: middle;"'
+  );
+
+  // Number badge (serial numbers)
+  decoded = decoded.replace(
+    /<td style="padding: 1\.25rem 1\.5rem; color: #1f2937; font-size: 0\.95rem; border: none; vertical-align: middle;">(\d+)<\/td>/gi,
+    '<td style="padding: 1.25rem 1.5rem; border: none; vertical-align: middle;"><span style="display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); color: #1e40af; border-radius: 50%; font-weight: 700; font-size: 0.95rem;">$1</span></td>'
+  );
+
+  // Year styling (bold blue)
+  decoded = decoded.replace(
+    /<td style="padding: 1\.25rem 1\.5rem; color: #1f2937; font-size: 0\.95rem; border: none; vertical-align: middle;">(19\d{2}|20\d{2})<\/td>/gi,
+    '<td style="padding: 1.25rem 1.5rem; border: none; vertical-align: middle;"><span style="color: #2563eb; font-weight: 700; font-size: 1rem;">$1</span></td>'
+  );
+
+  // Location with green pin icon
+  decoded = decoded.replace(
+    /<td style="padding: 1\.25rem 1\.5rem; color: #1f2937; font-size: 0\.95rem; border: none; vertical-align: middle;">([^<]*(?:\/[^<]*)*)<\/td>/gi,
+    (match, location) => {
+      if (location.includes('/') || /Kuala|Selangor|Johor|Penang|Melaka|Putrajaya|Cyberjaya|Pahang|Kedah|Perak|Sarawak|Sabah|Minden|Bangi|Beach Valley|Australia|Malaysia/i.test(location)) {
+        return `<td style="padding: 1.25rem 1.5rem; border: none; vertical-align: middle;">
+          <span style="display: inline-flex; align-items: center; gap: 0.5rem; color: #374151;">
+            <svg style="width: 1.1rem; height: 1.1rem; color: #10b981; flex-shrink: 0;" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+            </svg>
+            <span style="font-size: 0.95rem;">${location}</span>
+          </span>
+        </td>`;
+      }
+      return match;
+    }
+  );
+
+  // University names (bold)
+  decoded = decoded.replace(
+    /<td style="padding: 1\.25rem 1\.5rem; color: #1f2937; font-size: 0\.95rem; border: none; vertical-align: middle;">([^<]+(?:<a[^>]*>.*?<\/a>)?[^<]*)<\/td>/gi,
+    (match, content) => {
+      if (content.includes('inline-flex') || content.includes('linear-gradient') || /^\d+$/.test(content.trim()) || /^(19|20)\d{2}$/.test(content.trim())) {
+        return match;
+      }
+      return `<td style="padding: 1.25rem 1.5rem; color: #111827; font-weight: 600; font-size: 0.95rem; border: none; vertical-align: middle;">${content}</td>`;
+    }
+  );
+
+  // Lists
+  decoded = decoded.replace(/<ul>/g, '<ul class="list-disc pl-6 space-y-2 text-gray-800">');
+  decoded = decoded.replace(/<ol>/g, '<ol class="list-decimal pl-6 space-y-2 text-gray-800">');
+  decoded = decoded.replace(/<li>/g, '<li class="mb-1">');
 
   return decoded;
 };
-
-
 
 // Helper component to safely render HTML
 const RenderHtml = ({ htmlString }) => {
@@ -95,7 +267,8 @@ const Universities = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('public');
-  const [seo ,setSeo] = useState({});
+  const [seo, setSeo] = useState({});
+  const [showAll, setShowAll] = useState(false);
 
   const [pageContent, setPageContent] = useState({
     top: '',
@@ -104,7 +277,6 @@ const Universities = () => {
     foreign: ''
   });
 
-  // ✅ New state for the dynamic heading
   const [pageTitle, setPageTitle] = useState('TOP UNIVERSITIES IN MALAYSIA');
 
   useEffect(() => {
@@ -116,7 +288,6 @@ const Universities = () => {
         const data = response.data;
         setSeo(data.seo || {});
        
-
         setPageContent({
           top: formatHTML(data.pageContentTop?.description),
           public: formatHTML(data.pageContentPublic?.description),
@@ -124,7 +295,6 @@ const Universities = () => {
           foreign: formatHTML(data.pageContentForeign?.description)
         });
 
-        // ✅ Set the dynamic title from the API
         if (data.pageContentTop?.title) {
           setPageTitle(data.pageContentTop.title);
         }
@@ -139,7 +309,6 @@ const Universities = () => {
     fetchContent();
   }, []);
 
-  // ✅ Helper function to render the colored heading
   const renderColoredHeading = (title) => {
     if (!title) return null;
     const words = title.split(' ');
@@ -156,7 +325,7 @@ const Universities = () => {
       </>
     );
   };
-
+   
   const cardData = [
     {
       type: 'public',
@@ -183,43 +352,91 @@ const Universities = () => {
       path: '/universities/foreign-institution-in-malaysia'
     }
   ];
-const colorClasses = {
-  blue: {
-    text: 'text-blue-800',
-    bg: 'bg-blue-600',
-    hover: 'hover:bg-blue-700',
-    lightBg: 'bg-blue-100'
-  },
-  orange: {
-    text: 'text-orange-800',
-    bg: 'bg-orange-600',
-    hover: 'hover:bg-orange-700',
-    lightBg: 'bg-orange-100'
-  },
-  green: {
-    text: 'text-green-800',
-    bg: 'bg-green-600',
-    hover: 'hover:bg-green-700',
-    lightBg: 'bg-green-100'
-  }
-};
+
+  const colorClasses = {
+    blue: {
+      text: 'text-blue-800',
+      bg: 'bg-blue-600',
+      hover: 'hover:bg-blue-700',
+      lightBg: 'bg-blue-100'
+    },
+    orange: {
+      text: 'text-orange-800',
+      bg: 'bg-orange-600',
+      hover: 'hover:bg-orange-700',
+      lightBg: 'bg-orange-100'
+    },
+    green: {
+      text: 'text-green-800',
+      bg: 'bg-green-600',
+      hover: 'hover:bg-green-700',
+      lightBg: 'bg-green-100'
+    }
+  };
+
+  // Data for new accreditation sections
+  const mainBodies = [
+    {
+      name: 'Malaysian Qualifications Agency (MQA)',
+      area: 'Higher education: programmes & institutions',
+      description: 'Accredits higher-education programmes, implements the Malaysian Qualifications Framework (MQF), maintains the Malaysian Qualifications Register (MQR) listing accredited programmes.',
+      note: 'Statutory body under Malaysian Qualifications Agency Act 2007.',
+      icon: Shield,
+      color: 'from-cyan-500 to-cyan-600'
+    },
+    {
+      name: 'Finance Accreditation Agency (FAA)',
+      area: 'Financial services / training programmes',
+      description: 'Accredits training programmes in financial services industry (banks, insurance, securities) to ensure quality of adult professional programmes.',
+      note: 'More specialised to professional continuing education rather than general higher ed.',
+      icon: Shield,
+      color: 'from-cyan-500 to-cyan-700'
+    }
+  ];
+
+  const professionalBodies = [
+    {
+      name: 'Board of Engineers Malaysia (BEM)',
+      area: 'Engineering education & registration',
+      description: 'Accredits engineering degree & diploma programmes for registration as Graduate Engineers; ensures programmes meet international accords (Washington, Sydney, Dublin) via EAC.',
+      note: 'For engineering-related programmes, professional registration depends on this accreditation.',
+      icon: Award
+    },
+    {
+      name: 'Actuarial Society of Malaysia (ASM)',
+      area: 'Actuarial profession',
+      description: 'The representative body for actuaries in Malaysia; supports education, professional development and recognition of actuarial qualifications.',
+      note: 'Ensures actuarial standards and professional competence.',
+      icon: FileCheck
+    },
+    {
+      name: 'Technological Association Malaysia (TAM)',
+      area: 'Technology & engineering-science',
+      description: 'Serves as a learned society, professional association, supports education, research, professional development across technology/engineering disciplines.',
+      note: 'Membership-based, supportive/recognition role rather than formal accreditation of degrees.',
+      icon: Users
+    }
+  ];
+
+  // Calculate items to show (2 rows x 3 columns = 6 items for main cards)
+  const itemsPerRow = 3;
+  const rowsToShow = 2;
+  const maxItemsToShow = itemsPerRow * rowsToShow;
+
+  // For University cards - show all 3 always
+  const displayedCards = cardData;
 
   return (
     <>
-
-   <SEO 
-title={seo?.meta_title}
-description={seo?.meta_description}
-keywords={seo?.meta_keyword}
-ogImage={seo?.og_image_path}
-pageContent={seo?.page_content}
-pageurl={seo?.page_url}
-seorating={seo?.seo_rating}
-/>
-
-
-
-
+      <SEO 
+        title={seo?.meta_title}
+        description={seo?.meta_description}
+        keywords={seo?.meta_keyword}
+        ogImage={seo?.og_image_path}
+        pageContent={seo?.page_content}
+        pageurl={seo?.page_url}
+        seorating={seo?.seo_rating}
+      />
 
       {/* Breadcrumb */}
       <div className="w-full bg-blue-50 shadow-sm">
@@ -237,158 +454,213 @@ seorating={seo?.seo_rating}
       </div>
 
       <div className="py-10 px-4">
-        {/* Main Heading (Dynamic and Colored) */}
+        {/* Main Heading */}
         <h1 className="text-3xl md:text-4xl font-bold text-center mb-10">
           {renderColoredHeading(pageTitle)}
         </h1>
 
-        {/* University Cards */}
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-         {cardData.map((card) => {
-  const color = colorClasses[card.bgColor];
-  return (
-    <div key={card.type} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 flex flex-col items-center">
-      <div className={`${color.lightBg} p-4 rounded-full mb-4`}>
-        {card.icon}
-      </div>
-      <h3 className={`text-xl font-bold ${color.text} mb-3`}>{card.title}</h3>
-      <p className="text-gray-600 text-center mb-6">{card.description}</p>
-      <button
-        onClick={() => navigate(card.path)}
-        className={`mt-auto ${color.bg} ${color.hover} text-white font-semibold py-2 px-6 rounded-lg transition-colors`}
-      >
-        BROWSE ALL
-      </button>
-    </div>
-  );
-})}
+        {/* University Cards - 2 rows, 3 columns */}
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {displayedCards.map((card) => {
+              const color = colorClasses[card.bgColor];
+              return (
+                <div key={card.type} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 flex flex-col items-center">
+                  <div className={`${color.lightBg} p-4 rounded-full mb-4`}>
+                    {card.icon}
+                  </div>
+                  <h3 className={`text-xl font-bold ${color.text} mb-3`}>{card.title}</h3>
+                  <p className="text-gray-600 text-center mb-6">{card.description}</p>
+                  <button
+                    onClick={() => navigate(card.path)}
+                    className={`mt-auto ${color.bg} ${color.hover} text-white font-semibold py-2 px-6 rounded-lg transition-colors`}
+                  >
+                    BROWSE ALL
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
         </div>
 
-{/* INTERNATIONAL SCHOOLS SECTION */}
-<div className="max-w-6xl mx-auto mt-20">
-  <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">
-    <span className="text-purple-800">International Schools</span>{" "}
-    <span className="text-orange-500">in Malaysia</span>
-  </h2>
-  <div className="flex justify-center grid-cols-1 md:grid-cols-3 gap-8 ">
-    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 flex flex-col items-center">
-      <div className="bg-purple-100 p-4 rounded-full mb-4">
-        <FaSchool className="text-purple-600 text-4xl" />
-      </div>
-      <h3 className="text-xl font-bold text-purple-800 mb-3">International Schools</h3>
-      <p className="text-gray-600 text-center mb-6">
-        Discover top international schools in Malaysia that offer globally recognized curriculums like IGCSE, IB, and American diplomas.
-      </p>
-      <button
-        onClick={() => navigate("/universities/international-school-in-malaysia")}
-        className="mt-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-      >
-        BROWSE ALL
-      </button>
-    </div>
-  </div>
-</div>
-
-{/* ACCREDITING & PROFESSIONAL BODIES SECTION */}
-<div className="max-w-6xl mx-auto mt-24">
-  <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">
-    <span className="text-cyan-800">Accrediting</span>{" "}
-    <span className="text-rose-600">and Professional Bodies</span>
-  </h2>
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-    {/* Accrediting Body */}
-    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 flex flex-col items-center">
-      <div className="bg-cyan-100 p-4 rounded-full mb-4">
-        <FaCheckCircle className="text-cyan-600 text-4xl" />
-      </div>
-      <h3 className="text-xl font-bold text-cyan-800 mb-3">Accrediting Body</h3>
-      <p className="text-gray-600 text-center mb-6">
-        Learn about accreditation organizations ensuring high-quality international education in Malaysia.
-      </p>
-      <button
-        onClick={() => navigate("/bodies/accrediting-bodies")}
-        className="mt-auto bg-cyan-600 hover:bg-cyan-800 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-      >
-        View Detail
-      </button>
-    </div>
-    {/* Professional Bodies */}
-    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 flex flex-col items-center">
-      <div className="bg-rose-100 p-4 rounded-full mb-4">
-        <FaBriefcase className="text-rose-600 text-4xl" />
-      </div>
-      <h3 className="text-xl font-bold text-rose-800 mb-3">Professional Bodies</h3>
-      <p className="text-gray-600 text-center mb-6">
-        Explore professional bodies that collaborate with international schools and support educational excellence.
-      </p>
-      <button
-        onClick={() => navigate("/bodies/professional-bodies")}
-        className="mt-auto bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-      >
-        View Detail
-      </button>
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        {/* University Rankings Table */}
-        <div className="max-w-6xl mx-auto mt-16 prose prose-lg ">
-          {loading ? (
-            <div className="flex justify-center items-center p-10">
-              <Loader2 className="animate-spin text-blue-600" size={40} />
+        {/* INTERNATIONAL SCHOOLS SECTION */}
+        <div className="max-w-6xl mx-auto mt-20">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">
+            <span className="text-purple-800">International Schools</span>{" "}
+            <span className="text-orange-500">in Malaysia</span>
+          </h2>
+          <div className="flex justify-center grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 flex flex-col items-center">
+              <div className="bg-purple-100 p-4 rounded-full mb-4">
+                <FaSchool className="text-purple-600 text-4xl" />
+              </div>
+              <h3 className="text-xl font-bold text-purple-800 mb-3">International Schools</h3>
+              <p className="text-gray-600 text-center mb-6">
+                Discover top international schools in Malaysia that offer globally recognized curriculums like IGCSE, IB, and American diplomas.
+              </p>
+              <button
+                onClick={() => navigate("/universities/international-school-in-malaysia")}
+                className="mt-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+              >
+                BROWSE ALL
+              </button>
             </div>
-          ) : (
-            <RenderHtml htmlString={pageContent.top} />
-          )}
+          </div>
+        </div>
+
+        {/* ACCREDITING & PROFESSIONAL BODIES SECTION */}
+        <div className="max-w-6xl mx-auto mt-24">
+
+          {/* Main Accreditation Bodies Section */}
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">
+            <span className="text-cyan-800">Accrediting</span>{" "}
+            <span className="text-rose-600">and Professional Bodies</span>
+          </h2>
+          <section className="mb-16">
+            <div className="mb-12">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <Shield className="w-8 h-8 text-cyan-600" />
+                <h2 className="text-3xl font-bold text-cyan-800">Main Accreditation Bodies</h2>
+              </div>
+              <p className="text-lg text-gray-600 text-center">
+                National agencies responsible for quality assurance and accreditation
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              {mainBodies.map((body, index) => {
+                const Icon = body.icon;
+                return (
+                  <div key={index} className="bg-white rounded-xl overflow-hidden shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300">
+                    <div className={`h-2 bg-gradient-to-r ${body.color}`}></div>
+                    <div className="p-8">
+                      <div className="flex items-start gap-4 mb-6">
+                        <div className={`p-3 bg-gradient-to-br ${body.color} rounded-lg flex-shrink-0`}>
+                          <Icon className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-2xl font-bold text-gray-900 mb-2">{body.name}</h3>
+                          <p className="text-sm font-semibold text-cyan-600 uppercase tracking-wide">{body.area}</p>
+                        </div>
+                      </div>
+                      <p className="text-gray-700 leading-relaxed mb-6">{body.description}</p>
+                      <div className="bg-cyan-50 rounded-lg p-4 border-l-4 border-cyan-500">
+                        <p className="text-sm text-gray-600 italic">{body.note}</p>
+                      </div>
+                    <button
+  onClick={() => navigate('/resources/Graduatepass/overview')}
+  className="mt-6 w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+>
+  View Detail
+</button>
+
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Professional Bodies Section */}
+          <section className="mb-16">
+            <div className="mb-12">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <BookOpen className="w-8 h-8 text-rose-600" />
+                <h2 className="text-3xl font-bold text-rose-800">Professional Bodies</h2>
+              </div>
+              <p className="text-lg text-gray-600 text-center">
+                Discipline-specific organizations that regulate professional standards and recognition
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {professionalBodies.map((body, index) => {
+                const Icon = body.icon;
+                return (
+                  <div key={index} className="bg-white rounded-xl p-8 shadow-lg border border-gray-200 hover:shadow-2xl hover:border-rose-300 transition-all duration-300 flex flex-col">
+                    <div className="w-14 h-14 bg-gradient-to-br from-rose-500 to-rose-600 rounded-xl flex items-center justify-center mb-6">
+                      <Icon className="w-7 h-7 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{body.name}</h3>
+                    <p className="text-sm font-semibold text-rose-600 uppercase tracking-wide mb-4">{body.area}</p>
+                    <p className="text-gray-700 leading-relaxed mb-6 flex-grow">{body.description}</p>
+                    <div className="bg-rose-50 rounded-lg p-4 border-l-4 border-rose-500 mb-6">
+                      <p className="text-sm text-gray-600 italic">{body.note}</p>
+                    </div>
+                  <button
+  onClick={() => navigate('/resources/Graduatepass/overview')}
+  className="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors mt-auto"
+>
+  View Detail
+</button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Key Takeaways Section */}
+          <section className="mb-16">
+            <div className="bg-white rounded-2xl p-8 md:p-12 shadow-lg border border-gray-200">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Key Takeaways</h2>
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <CheckCircle2 className="w-6 h-6 text-cyan-600 flex-shrink-0 mt-1" />
+                  <p className="text-gray-700 leading-relaxed">
+                    <span className="font-semibold">MQA accreditation</span> is essential for higher education programmes to be recognized and valid in Malaysia.
+                  </p>
+                </div>
+                <div className="flex gap-4">
+                  <CheckCircle2 className="w-6 h-6 text-cyan-600 flex-shrink-0 mt-1" />
+                  <p className="text-gray-700 leading-relaxed">
+                    <span className="font-semibold">Professional body recognition</span> adds significant value for regulated professions like engineering, helping with registration and licensure.
+                  </p>
+                </div>
+                <div className="flex gap-4">
+                  <CheckCircle2 className="w-6 h-6 text-cyan-600 flex-shrink-0 mt-1" />
+                  <p className="text-gray-700 leading-relaxed">
+                    <span className="font-semibold">Dual compliance</span> is often required: institutions must meet both national accreditation (MQA/FAA) and professional body standards for regulated fields.
+                  </p>
+                </div>
+                <div className="flex gap-4">
+                  <CheckCircle2 className="w-6 h-6 text-cyan-600 flex-shrink-0 mt-1" />
+                  <p className="text-gray-700 leading-relaxed">
+                    Always verify that your chosen programme is accredited by the relevant bodies to ensure your qualification will be recognized for employment and further study.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
         {/* Tab Section */}
         <div className="max-w-6xl mx-auto mt-20 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-10">
-                <span className="text-blue-800">Find out more</span>{" "}
-                <span className="text-orange-500">about:</span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <button 
-                    onClick={() => setActiveTab('public')}
-                    className={`group relative overflow-hidden rounded-xl bg-white px-6 py-8 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl ${activeTab === 'public' ? 'ring-2 ring-blue-600' : ''}`}
-                >
-                    <h3 className="text-xl font-bold text-blue-800">PUBLIC UNIVERSITIES</h3>
-                </button>
-                <button 
-                    onClick={() => setActiveTab('private')}
-                    className={`group relative overflow-hidden rounded-xl bg-white px-6 py-8 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl ${activeTab === 'private' ? 'ring-2 ring-orange-600' : ''}`}
-                >
-                    <h3 className="text-xl font-bold text-orange-800">PRIVATE UNIVERSITIES</h3>
-                </button>
-                <button 
-                    onClick={() => setActiveTab('foreign')}
-                    className={`group relative overflow-hidden rounded-xl bg-white px-6 py-8 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl ${activeTab === 'foreign' ? 'ring-2 ring-green-600' : ''}`}
-                >
-                    <h3 className="text-xl font-bold text-green-800">FOREIGN UNIVERSITIES</h3>
-                </button>
-            </div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-10">
+            <span className="text-blue-800">Find out more</span>{" "}
+            <span className="text-orange-500">about:</span>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <button 
+              onClick={() => setActiveTab('public')}
+              className={`group relative overflow-hidden rounded-xl bg-white px-6 py-8 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl ${activeTab === 'public' ? 'ring-2 ring-blue-600' : ''}`}
+            >
+              <h3 className="text-xl font-bold text-blue-800">PUBLIC UNIVERSITIES</h3>
+            </button>
+            <button 
+              onClick={() => setActiveTab('private')}
+              className={`group relative overflow-hidden rounded-xl bg-white px-6 py-8 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl ${activeTab === 'private' ? 'ring-2 ring-orange-600' : ''}`}
+            >
+              <h3 className="text-xl font-bold text-orange-800">PRIVATE UNIVERSITIES</h3>
+            </button>
+            <button 
+              onClick={() => setActiveTab('foreign')}
+              className={`group relative overflow-hidden rounded-xl bg-white px-6 py-8 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl ${activeTab === 'foreign' ? 'ring-2 ring-green-600' : ''}`}
+            >
+              <h3 className="text-xl font-bold text-green-800">FOREIGN UNIVERSITIES</h3>
+            </button>
+          </div>
         </div>
-
-
-
-        
 
         {/* Dynamic Content */}
         <div className="max-w-6xl mx-auto mt-16 prose prose-lg">

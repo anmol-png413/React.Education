@@ -5,13 +5,28 @@ import { useLocation } from 'react-router-dom';
 import Navbar from "./components/home section/Navbar";
 import Footer from "./components/home section/Footer";
 import Hero from "./components/home section/Hero";
+// import studyjurney from "./components/home section/studyjurney";
+import StudyJurney from "./components/home section/studyjurney";
+
+
 import UniversitySlider from "./components/home section/UniversitySlider";
+import Malaysia from "./components/home section/malyisia";
+
+
+
 import ProgrammeSelector from "./components/home section/ProgrammeSelector";
+import Culture from "./components/home section/Culture";
+
 import MalaysiaStudyInfo from "./components/home section/MalaysiaStudyInfo";
 import PopularUniversities from "./components/home section/PopularUniversities";
+import FieldStudy from "./components/home section/FieldStudy";
 import TrendingCourses from "./components/TrendingCourses";
+// import FieldStudy from "./components/home section/FieldStudy";
 import UniversityRankingTable from "./components/home section/UniversityRankingTable";
 import CounsellorSupport from "./components/home section/CounsellorSupport";
+
+
+
 import Consultants from "./components/home section/Consultants";
 import TestimonialSlider from "./components/home section/TestimonialSlider";
 import WhatsAppButton from "./components/WhatsAppButton";
@@ -28,6 +43,12 @@ import Exam from "./pages/Exam";
 import ExamDetail from "./pages/ExamDetail";
 import Services from "./pages/Services";
 import ServiceDetail from "./pages/Servicesdetail";
+import Graduate from "./pages/Grdadute";
+import Graduatedetail from './pages/Graduatedetail';
+import TeamEducationMalaysia from "./pages/TeamEducationMalaysia";
+
+
+
 //about us pages
 import WhoWeAre from "./pages/about-us/WhoWeAre";
 import WhatStudentSay from "./pages/about-us/WhatStudentSay";
@@ -72,7 +93,7 @@ import EmailLogin from "./pages/Regstation/StudentRegstation/EmailLogin";
 
 function App() {
  const location = useLocation();
-  const isSpecializationDetailPage = /^\/specialization\/[^/]+$/.test(location.pathname);// add more if needed
+//  add   const isSpecializationDetailPage = /^\/specialization\/[^/]+$/.test(location.pathname);//more if needed
 
   // Check if the current route matches exactly or starts with certain prefix
   // const hideModelSignUpForm = [
@@ -88,7 +109,8 @@ function App() {
   return (
     <>
     <ToastContainer />
-     {!isSpecializationDetailPage && <Navbar />}
+     {/* {!isSpecializationDetailPage && <Navbar />} */}
+     <Navbar />
       <ScrollToTopButton />
       <WhatsAppButton />
       {/* {!hideModelSignUpForm && <ModelSignUpform />} */}
@@ -99,15 +121,22 @@ function App() {
           element={
             <>
               <Hero />
+              <StudyJurney />
               <UniversitySlider />
-              <MalaysiaStudyInfo />
+              <Malaysia />
+              <Culture />
+             <MalaysiaStudyInfo />
               <ProgrammeSelector />
-              <ExpandableCard/>
-              <CounsellorSupport />
-              <TrendingCourses />
+              {/* <ExpandableCard/> */}
+              {/* <CounsellorSupport /> */}
+                 <FieldStudy />
+              {/* <TrendingCourses /> */}
+             
               <UniversityRankingTable />
-              <Consultants />
-              <PopularUniversities />
+              
+              {/* <Consultants /> */}
+          
+              {/* <PopularUniversities /> */}
               <TestimonialSlider />
             </>
           }
@@ -128,6 +157,13 @@ function App() {
         <Route path="/resources/exams/:slug" element={<ExamDetail />} />
         <Route path="/resources/services" element={<Services />} />
         <Route path="/resources/services/:slug" element={<ServiceDetail />} />
+        <Route path="/resources/graduate-pass" element={<Graduate />} />
+        <Route path="/resources/Graduatepass/:section" element={<Graduatedetail />} />
+        <Route path="/resources/Graduatepass/eligibility" element={<TeamEducationMalaysia />} />
+
+
+     
+
         <Route path="/who-we-are" element={<WhoWeAre />} />
         <Route path="/students-say" element={<WhatStudentSay />} />
         <Route path="/study-malaysia" element={<StudyMalaysia />} />

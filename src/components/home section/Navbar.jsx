@@ -1,3 +1,6 @@
+
+
+
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaChevronDown, FaBars, FaTimes } from "react-icons/fa";
@@ -75,7 +78,7 @@ const Navbar = () => {
             </button>
 
             {showDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-[550px] bg-white/90 backdrop-blur shadow-2xl rounded-xl border border-blue-100 p-6 grid grid-cols-1 md:grid-cols-3 gap-6 z-50">
+              <div className="absolute top-full left-0 mt-1 w-[700px] bg-white/90 backdrop-blur shadow-2xl rounded-xl border border-blue-100 p-6 grid grid-cols-1 md:grid-cols-4 gap-4 z-50">
                 {/* Exams */}
                 <div>
                   <Link to="/resources/exams" className="font-bold text-blue-600 mb-3 hover:underline block">Exams</Link>
@@ -98,6 +101,21 @@ const Navbar = () => {
                   </ul>
                 </div>
 
+                {/* Graduate Pass - NEW SECTION */}
+                <div>
+                  {/* <Link to="/resources/Graduatepass" className="font-bold text-blue-600 mb-3 hover:underline block">Graduate Pass</Link> */}
+                  <Link to="/resources/graduate-pass" className="font-bold text-blue-600 mb-3 hover:underline block">
+  Graduate Pass
+</Link>
+
+                  <ul className="space-y-2 text-sm">
+                    {/* <li><Link to="/resources/Graduatepass/overview" className="hover:underline">Maq</Link></li> */}
+                    <li><Link to="/resources/Graduatepass/eligibility" className="hover:underline">Team Education Malaysia</Link></li>
+                    <li><Link to="/resources/Graduatepass/application" className="hover:underline">Application Process</Link></li>
+                    <li><Link to="/resources/Graduatepass/benefits" className="hover:underline">Benefits</Link></li>
+                  </ul>
+                </div>
+
                 {/* About Us */}
                 <div>
                   <p className="font-bold text-black mb-3 hover:underline block">About Us</p>
@@ -108,9 +126,14 @@ const Navbar = () => {
                     <li><Link to="/why-study" className="hover:underline">Why Study In Malaysia?</Link></li>
                   </ul>
                 </div>
+
+            
               </div>
+              
             )}
           </div>
+
+        
 
           <Link to="/courses-in-malaysias" className={`hover:text-blue-700 transition ${isActive("/courses-in-malaysias") && "text-blue-900 font-bold underline underline-offset-8"}`}>Courses</Link>
           <Link to="/universities" className={`hover:text-blue-700 transition ${isActive("/universities") && "text-blue-900 font-bold underline underline-offset-8"}`}>Universities</Link>
@@ -165,6 +188,16 @@ const Navbar = () => {
                   <Link to="/resources/services/visa-guidance" className="block text-left w-full pl-2">Visa Guidance</Link>
                   <Link to="/resources/services/pre-departure-support" className="block text-left w-full pl-2">Pre Departure Support</Link>
                 </div>
+                
+                {/* Graduate Pass - NEW SECTION FOR MOBILE */}
+                <div>
+                  <Link to="/resources/graduate-pass" className="text-blue-600 font-semibold block text-left w-full">Graduate Pass</Link>
+                  <Link to="/resources/graduate-pass/overview" className="block text-left w-full pl-2">Overview</Link>
+                  <Link to="/resources/graduate-pass/eligibility" className="block text-left w-full pl-2">Eligibility</Link>
+                  <Link to="/resources/graduate-pass/application" className="block text-left w-full pl-2">Application Process</Link>
+                  <Link to="/resources/graduate-pass/benefits" className="block text-left w-full pl-2">Benefits</Link>
+                </div>
+
                 <div>
                   <p className="text-black font-semibold">About Us</p>
                   <Link to="/who-we-are" className="block text-left w-full pl-2">Who we are</Link>
