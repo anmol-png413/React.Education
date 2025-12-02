@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -16,6 +18,7 @@ import { Home, Layers, Loader2 } from "lucide-react";
 import { API_URL } from "../../config";
 import PopupForm from "./PopupForm";
 import { BsCalendar3 } from "react-icons/bs";
+import FeaturedUniversities from "../../components/FeaturedUniversities";
 
 
 
@@ -36,7 +39,9 @@ import {
   FaGraduationCap,
   FaSchool,
   FaCheck,
-  FaPhone,       
+  FaPhone,  
+  FaPhoneSquareAlt,
+  FaPhoneAlt,     
   FaFax,          
   FaEnvelope,     
   FaBuilding,    
@@ -167,7 +172,7 @@ const UniversityDetailPage = () => {
             if (!path) return null;
             if (/^https?:\/\//i.test(path)) return path;
             const cleaned = String(path).replace(/^\/+/, '');
-            return `https://www.educationmalaysia.in/${cleaned}`;
+            return `https://www.educationmalaysia.in/storage/${cleaned}`;
           };
           if (Array.isArray(photosArray)) {
             fetchedPhotos = photosArray
@@ -181,13 +186,40 @@ const UniversityDetailPage = () => {
         // Choose the best five from fetched photos; fallback to static if none
         const bestFive = fetchedPhotos.length > 0 ? selectBestFivePhotos(fetchedPhotos) : [];
 
-        // Merge fetched data with selected photos (fallback to static) and offered courses
-        const mergedData = {
-          ...fetchedData,
-          photos: bestFive.length > 0 ? bestFive : STATIC_PHOTOS,
-          offeredCourses: STATIC_OFFERED_COURSES,
-        };
-        setUniversityData(mergedData);
+       
+const mergedData = {
+  ...fetchedData,
+  photos: bestFive.length > 0 ? bestFive : STATIC_PHOTOS,
+  offeredCourses: STATIC_OFFERED_COURSES,
+  
+  // ✅ CITY + STATE add karo
+ city: fetchedData.city
+  ? fetchedData.state
+    ? `${fetchedData.city}, ${fetchedData.state}`
+    : fetchedData.city
+  : "Kuala Lumpur, Malaysia",
+
+  
+  established: fetchedData.established_year || "1970",
+  courses: fetchedData.active_programs_count || "N/A",
+  Scholarship: true,
+  inst_type: fetchedData.institute_type?.type || "Private Institution",
+
+  local_students: fetchedData.local_students || "18,000+",
+  international_students: fetchedData.international_students || "9,000+",
+  
+  hostel_facility: fetchedData.hostel_facility || [
+    "On-campus accommodation available",
+    "Separate facilities for male and female students", 
+    "Fully furnished rooms with amenities"
+  ],
+  
+  approved_by: fetchedData.approved_by || "MQA",
+  accredited_by: fetchedData.accredited_by || "Malaysian Qualifications Agency",
+  times_rank: fetchedData.times_rank || "N/A",
+  qs_asia_rank: fetchedData.qs_asia_rank || "N/A",
+  rating: fetchedData.rating || 4.2,
+};     setUniversityData(mergedData);
       } catch (error) {
         console.error("Error fetching university details:", error);
         // Handle error state or redirect
@@ -280,7 +312,7 @@ seorating={seo?.seo_rating}
         </div>
       </div>
     
-         <div className="min-h-screen bg-gray-50">
+         {/* <div className="min-h-screen bg-gray-50"> */}
        {/* Mobile Layout  */}
        <div className="sm:hidden bg-gray-50">
         <div className="bg-white p-4">
@@ -297,28 +329,32 @@ seorating={seo?.seo_rating}
               <h1 className="text-lg font-bold text-gray-900">
                 {universityData.name}
               </h1>
-              <div className="flex items-center gap-1.5 mt-1">
+              {/* <div className="flex items-center gap-1.5 mt-1">
                 <FaMapMarkerAlt className="text-blue-500 text-xs" />
                 <span className="text-blue-600 font-medium text-sm">
                   Location: {universityData.city}
                 </span>
-              </div>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="bg-blue-700 text-white px-2 py-1 rounded-full font-medium text-xs">
-                  {universityData.inst_type}
-                </span>
-                <div className="flex items-center gap-1 text-gray-600 text-xs">
-                  <span className="font-medium">SETARA:</span>
-                  <div className="flex items-center">
-                    {[1, 2, 3].map((i) => <FaStar key={i} className="text-yellow-400" />)}
-                    {[4, 5].map((i) => <FaStar key={i} className="text-gray-300" />)}
-                  </div>
-                </div>
-              </div>
+              </div> */}
+              <div className="flex items-center gap-1.5 mt-1">
+  <FaMapMarkerAlt className="text-blue-500 text-xs flex-shrink-0" />
+  <span className="text-blue-600 font-medium text-sm " title={`Location: ${universityData.city}`}>
+    Location: {universityData.city}
+  </span>
+</div>
+              {/* SETARA Stars */}
+<div className="flex items-center gap-1 text-gray-600 text-sm">
+  <span className="font-medium">SETARA:</span>
+  {[...Array(5)].map((_, i) => (
+    <FaStar 
+      key={i} 
+      className={i < Math.round(universityData.rating || 3) ? "text-yellow-400" : "text-gray-300"} 
+    />
+  ))}
+</div>       </div>
             </div>
-          </div>
+          {/* </div> */}
 
-          {/* Main Image */}
+          Main Image
           <div className="relative mb-4">
             {featuredPhotos?.length > 0 && (
               <img
@@ -330,75 +366,11 @@ seorating={seo?.seo_rating}
           </div>
 
           {/* Action Buttons Row */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-             <button  onClick={handleClick }
-                className="w-full bg-blue-50 text-blue-700 px-4 py-2.5 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-2 text-sm font-medium">
-                <FaLocationArrow /> Get Direction
-            </button>
-            <button className="w-full bg-blue-50 text-blue-700 px-4 py-2.5 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-2 text-sm font-medium">
-                <FaEye /> View Photos
-            </button>
-          </div>
-        </div>
-
-        <div className="p-4 space-y-4">
-          {/* Detail Cards */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white rounded-xl shadow-sm p-3 flex flex-col items-center text-center">
-              <BsCalendar3 className="text-xl text-blue-600" />
-              <h3 className="text-md font-bold mt-1.5">{universityData.established || "1970"}</h3>
-              <p className="text-gray-500 text-xs">Established</p>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm p-3 flex flex-col items-center text-center">
-              <FaGraduationCap className="text-xl text-green-600" />
-              <h3 className="text-md font-bold mt-1.5">{universityData.Scholarship ? "Yes" : "No"}</h3>
-              <p className="text-gray-500 text-xs">Scholarship</p>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm p-3 flex flex-col items-center text-center">
-              <FaEye className="text-xl text-purple-600" />
-              <h3 className="text-md font-bold mt-1.5">{universityData.views || "1.2k"}</h3>
-              <p className="text-gray-500 text-xs">Views</p>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm p-3 flex flex-col items-center text-center">
-              <FaSchool className="text-xl text-orange-600" />
-              <h3 className="text-md font-bold mt-1.5">{universityData.courses || "40"}</h3>
-              <p className="text-gray-500 text-xs">Courses</p>
-            </div>
-          </div>
+        
+        
 
           {/* Global Rankings */}
-          {/* <div className="bg-white rounded-xl shadow-md p-4">
-            <h3 className="text-base font-semibold text-gray-900 mb-3">Global Rankings</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg p-4 text-white shadow">
-                <p className="text-xl font-bold">#{universityData.rank || "28"}</p>
-                <p className="text-xs opacity-90">in World</p>
-              </div>
-              <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-lg p-4 text-white shadow">
-                <p className="text-xl font-bold">#{universityData.qs_rank || "181"}</p>
-                <p className="text-xs opacity-90">in Malaysia</p>
-              </div>
-            </div>
-          </div> */}
-
-          {/* Action Buttons */}
-          {/* <div className="bg-white rounded-xl shadow-md p-4 flex flex-col gap-3">
-            <h3 className="text-base font-semibold text-gray-900 mb-1">Downloads & Reviews</h3>
-            <button onClick={() => setIsOpen(true)} className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm font-semibold">
-              <FaDownload /> Download Brochure
-            </button>
-            <button onClick={() => setIsOpen(true)} className="w-full bg-gray-100 border border-gray-300 text-gray-800 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium">
-              <FaFileAlt /> Download Fees Structure
-            </button>
-            <Link to="/write-a-review" className="w-full">
-              <button className="w-full bg-gray-100 border border-gray-300 text-gray-800 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium">
-                <FaEdit /> Write a review
-              </button>
-            </Link>
-          </div>
-          <PopupForm isOpen={isOpen} onClose={() => setIsOpen(false)} universityData={universityData} />
-        </div>
-      </div> */}
+        
       <div className="bg-white rounded-xl shadow-md p-4 flex flex-col gap-3">
   <h3 className="text-base font-semibold text-gray-900 mb-1">Downloads & Services</h3>
   
@@ -413,15 +385,16 @@ seorating={seo?.seo_rating}
     onClick={() => setIsOpen(true)} 
     className="w-full bg-gray-100 border border-gray-300 text-gray-800 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
   >
-    <FaFileAlt /> Download Fees Structure
+    <FaFileAlt /> Download Fees Structures
   </button>
   
-  <button 
-    onClick={() => setIsCounsellingOpen(true)} 
-    className="w-full bg-green-600 text-white px-4 py-2.5 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm font-semibold"
-  >
-    <FaBookOpen /> Book Counselling Session
-  </button>
+  
+<button 
+  onClick={() => setIsCounsellingOpen(true)} 
+  className="w-full bg-gray-100 border border-gray-300 text-gray-800 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+>
+  <FaBookOpen /> Book Direct University Counseling
+</button>
   
   <Link to="/write-a-review" className="w-full">
     <button className="w-full bg-gray-100 border border-gray-300 text-gray-800 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium">
@@ -461,17 +434,25 @@ seorating={seo?.seo_rating}
                      className="w-full h-full object-contain"
                    />
                  </div>
-                 <div className="flex-1">
+                 {/* <div className="flex-1"> */}
+                 <div className="flex-1 min-w-0">
                    <h1 className="text-lg font-bold text-gray-900 mb-1">
                      {universityData.name}
                    </h1>
-                   <div className="flex flex-row items-center justify-start gap-2 text-sm text-gray-600">
-                     <div className="flex items-center gap-1">
-                       <FaMapMarkerAlt className="text-blue-500" />
-                       <span className="text-blue-600 font-medium">
+                   {/* <div className="flex flex-row items-center justify-start gap-2 text-sm text-gray-600"> */}
+                   <div className="flex flex-row items-center justify-start gap-2 text-sm text-gray-600 flex-wrap">
+
+                     {/* <div className="flex items-center gap-1">
+                 <span className="text-blue-600 font-medium">       
                          Location: {universityData.city}
                        </span>
-                     </div>
+                     </div> */}
+                     <div className="flex items-center gap-1 min-w-0 flex-1">
+  <FaMapMarkerAlt className="text-blue-500 flex-shrink-0" />
+  <span className="text-blue-600 font-medium truncate" title={`Location: ${universityData.city}`}> 
+    Location: {universityData.city}
+  </span>
+</div>
                      <div className="mt-0">
                        <button  onClick={handleClick }
                         className="flex items-center gap-2 border border-blue-700 text-blue-700 px-3 py-1 rounded-md hover:bg-blue-50 transition whitespace-nowrap">
@@ -483,41 +464,55 @@ seorating={seo?.seo_rating}
                  </div>
                </div>
 
-{/* Desktop Detail Block */}
-               <div className="grid grid-cols-3 gap-4 sm:gap-6 text-sm w-auto">
-                 {/* Type + Ranking */}
-                 <div className="flex flex-col gap-1 items-start text-left">
-                   <div className="flex items-center gap-2">
-                     <span className="text-gray-600 text-sm">Type</span>
-                     <span className="bg-blue-700 text-white px-2 py-1 rounded-full font-medium text-sm">
-                       {universityData.inst_type}
-                     </span>
-                   </div>
-                   <div className="flex items-center gap-1 text-gray-600 text-sm">
-                     <span className="font-lg">SETARA Ranking:</span>
-                     {[1, 2, 3].map((i) => (
-                       <FaStar key={i} className="text-yellow-400 text-sm" />
-                     ))}
-                     {[4, 5].map((i) => (
-                       <FaStar key={i} className="text-black text-sm" />
-                     ))}               
-                   </div>
-                 </div>
+{/* Desktop Detail Block - RIGHT ALIGNED */}
+<div className="flex items-start justify-end gap-4 text-sm mr-50">
+  
+  {/* Type + SETARA Ranking */}
+ 
+<div className="flex flex-col gap-2">
 
-                 {/* Featured + MQA */}
-                 <div className="flex flex-col gap-1 items-start text-left">
-                   <div className="flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-medium gap-2 text-sm">
-                     <div className="w-1 h-1 bg-blue-950 rounded-full " />
-                     <div className="animate-pulse">
-                       Featured
-                     </div>
-                   </div>
-                   <div className="text-gray-600 text-sm">
-                     Approved By : <span className="font-medium">MQA</span>
-                   </div>
-                 </div>
-               </div>
-             </div>
+  {/* TYPE */}
+  <div className="flex items-center gap-2">
+    <span className="text-gray-600 text-sm">Type:</span>
+    <span className="bg-blue-700 text-white px-2.5 py-1 rounded-full font-medium text-sm">
+      {universityData.inst_type}
+    </span>
+  </div>
+
+  {/* SETARA */}
+  <div className="flex items-center gap-1 text-gray-600 text-sm">
+    <span className="font-medium">SETARA:</span>
+    <div className="flex items-center">
+      {[...Array(5)].map((_, i) => (
+        <FaStar 
+          key={i} 
+          className={
+            i < Math.round(universityData.rating || 3) 
+              ? "text-yellow-400" 
+              : "text-gray-300"
+          } 
+        />
+      ))}
+    </div>
+  </div>
+
+</div>
+
+
+  {/* Featured + Approved By (Stacked) */}
+<div className="flex flex-col gap-1.5 ml-20">
+    <div className="flex items-center bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full font-medium gap-2 text-sm">
+      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse" />
+      <span>Featured</span>
+    </div>
+    <div className="text-gray-600 text-sm">
+      <span className="font-medium">Approved By:</span> MQA
+    </div>
+  </div>
+
+</div>
+              </div>
+
 
  {/* Images */}
 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-5">
@@ -565,7 +560,7 @@ seorating={seo?.seo_rating}
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
       
       {/* Left Content (Cards + Study Options) */}
-      <div className="col-span-2 space-y-6">
+      <div className="col-span-2 space-y-4">
 
         {/* Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4  ">
@@ -607,13 +602,10 @@ seorating={seo?.seo_rating}
         </div>
 
         {/* Study Options */}
-        {/* <div className="bg-white rounded-xl shadow-sm p-4"> */}
-          {/* <h2 className="text-base font-semibold mb-4">Study Options</h2> */}
+    
           <div className="flex flex-wrap gap-4">
             {[
-              // { label: "Study Online", bg: "bg-green-50", border: "border-green-200", text: "text-green-700", icon: "text-green-500" },
-              // { label: "Part Time", bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700", icon: "text-blue-500" },
-              // { label: "Full Time", bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-700", icon: "text-purple-500" },
+              
             ].map((option, index) => (
               <div
                 key={index}
@@ -632,7 +624,7 @@ seorating={seo?.seo_rating}
          
     
          
-       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 -mt-2">
   
   {/* TOP LEFT: Accredited By */}
   <div className="bg-white rounded-xl shadow-sm p-5">
@@ -656,93 +648,91 @@ seorating={seo?.seo_rating}
     </ul>
   </div>
 
-  {/* TOP RIGHT: Hostel Facility */}
-  <div className="bg-white rounded-xl shadow-sm p-5">
-    <div className="flex items-center gap-2 mb-4">
-      <FaBed className="text-green-600 text-lg" />
-      <h3 className="text-base font-semibold text-gray-900">Hostel Facility</h3>
-    </div>
-    <ul className="space-y-2 text-sm text-gray-700">
-      <li className="flex items-start gap-2">
-        <span className="text-green-600 mt-0.5">•</span>
-        <span>On-campus accommodation available</span>
-      </li>
-      <li className="flex items-start gap-2">
-        <span className="text-green-600 mt-0.5">•</span>
-        <span>Separate facilities for male and female students</span>
-      </li>
-      <li className="flex items-start gap-2">
-        <span className="text-green-600 mt-0.5">•</span>
-        <span>Fully furnished rooms with amenities</span>
-      </li>
-    </ul>
+  {/* Hostel Facility */}
+{/* Hostel Facility */}
+<div className="bg-white rounded-xl shadow-sm p-5">
+  <div className="flex items-center gap-2 mb-4">
+    <FaBed className="text-green-600 text-lg" />
+    <h3 className="text-base font-semibold text-gray-900">Hostel Facility</h3>
   </div>
-
-  {/* BOTTOM LEFT: Total Students */}
-  <div className="bg-white rounded-xl shadow-sm p-5">
-    <div className="flex items-center gap-2 mb-4">
-      <FaUsers className="text-purple-600 text-lg" />
-      <h3 className="text-base font-semibold text-gray-900">Total Students</h3>
-    </div>
-    <div className="space-y-4">
-      {/* Local Students */}
-      <div>
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">Local Students</span>
-          <span className="text-sm font-bold text-purple-700">18,000+</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div className="bg-purple-600 h-2 rounded-full" style={{ width: '75%' }}></div>
-        </div>
-      </div>
-      
-      {/* International Students */}
-      <div>
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">International Students</span>
-          <span className="text-sm font-bold text-blue-700">9,000+</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div className="bg-blue-600 h-2 rounded-full" style={{ width: '45%' }}></div>
-        </div>
-      </div>
-    </div>
+  <ul className="space-y-2 text-sm text-gray-700">
+    {Array.isArray(universityData.hostel_facility) ? (
+      universityData.hostel_facility.map((facility, index) => (
+        <li key={index} className="flex items-start gap-2">
+          <span className="text-green-600 mt-0.5">•</span>
+          <span>{facility}</span>
+        </li>
+      ))
+    ) : (
+      <li className="flex items-start gap-2">
+        <span className="text-green-600 mt-0.5">•</span>
+        <span>{universityData.hostel_facility || "Available"}</span>
+      </li>
+    )}
+  </ul>
+</div>
+{/* Total Students */}
+<div className="bg-white rounded-xl shadow-sm p-5">
+  <div className="flex items-center gap-2 mb-4">
+    <FaUsers className="text-purple-600 text-lg" />
+    <h3 className="text-base font-semibold text-gray-900">Total Students</h3>
   </div>
-
-  {/* BOTTOM RIGHT: Contact Info */}
-  <div className="bg-white rounded-xl shadow-sm p-5">
-    <div className="flex items-center gap-2 mb-4">
-      <FaPhone className="text-orange-600 text-lg" />
-      <h3 className="text-base font-semibold text-gray-900">Contact Info</h3>
+  <div className="space-y-4">
+    {/* Local Students */}
+    <div>
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-sm font-medium text-gray-700">Local Students</span>
+        <span className="text-sm font-bold text-purple-700">
+          {universityData.local_students || "18,000+"}
+        </span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="bg-purple-600 h-2 rounded-full" style={{ width: '75%' }}></div>
+      </div>
     </div>
-    <div className="space-y-3 text-sm text-gray-700">
-      <div className="flex items-center gap-3">
-        <FaPhone className="text-orange-500" />
-        <span>+60 3-8196 4000</span>
+    
+    {/* International Students */}
+    <div>
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-sm font-medium text-gray-700">International Students</span>
+        <span className="text-sm font-bold text-blue-700">
+          {universityData.international_students || "9,000+"}
+        </span>
       </div>
-      <div className="flex items-center gap-3">
-        <FaFax className="text-gray-500" />
-        <span>+60 3-8196 4053</span>
-      </div>
-      <div className="flex items-center gap-3">
-        <FaEnvelope className="text-blue-500" />
-        <span>info@iium.edu.my</span>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="bg-blue-600 h-2 rounded-full" style={{ width: '45%' }}></div>
       </div>
     </div>
   </div>
+</div>
 
+  {/* Contact Info - Desktop */}
+{/* Contact Info - Desktop */}
+<div className="bg-white rounded-xl shadow-sm p-5">
+  <div className="flex items-center gap-2 mb-4">
+    <FaPhoneAlt className="text-orange-600 text-lg" />
+    <h3 className="text-base font-semibold text-gray-900">Contact Info</h3>
+  </div>
+  <div className="space-y-3 text-sm text-gray-700">
+    <div className="flex items-center gap-3">
+      <FaPhoneAlt className="text-orange-500" />
+      <span>+60 3-8196 4000</span>
+    </div>
+    <div className="flex items-center gap-3">
+      <FaFax className="text-gray-500" />
+      <span>+60 3-8196 4053</span>
+    </div>
+    <div className="flex items-center gap-3">
+      <FaEnvelope className="text-blue-500" />
+      <span>info@university.edu.my</span>
+    </div>
+  </div>
+</div>
 </div>
  
-
-
-        
-    
-
-
-
            {/* Added Facilities section */}
 <div className="mt-6 bg-white rounded-2xl shadow-md border border-gray-100 p-5 w-full">
-  <h3 className="text-md font-bold text-gray-900 mb-4">Facilities:</h3>
+  <h3 className="text-md font-bold text-gray-900 mb-4">Faculties:</h3>
   <div className="flex flex-wrap gap-2">
     {universityData.offeredCourses.map((course, index) => (
       <div
@@ -754,10 +744,6 @@ seorating={seo?.seo_rating}
     ))}
   </div>
 </div>
-
-
-
-
 
 
       </div>
@@ -778,26 +764,17 @@ seorating={seo?.seo_rating}
             <FaFileAlt className="text-base" />
             Download Fees Structure
           </button>
-          {/* <button 
-  onClick={() => setIsOpen(true)} 
-  className="w-full bg-gray-100 border border-gray-300 text-gray-800 px-5 py-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
->
-  <FaBookOpen className="text-base" />
-  Book Counselling Session
-</button> */}
+         
+
 <button 
-  onClick={() => setIsCounsellingOpen(true)}  // ✅ BAS YE CHANGE KARO
+  onClick={() => setIsCounsellingOpen(true)}
   className="w-full bg-gray-100 border border-gray-300 text-gray-800 px-5 py-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
 >
   <FaBookOpen className="text-base" />
-  Book Counselling Session
+  Book Direct University Counciling
 </button>
-          {/* <Link to="/write-a-review" className="w-full">
-            <button className="w-full bg-gray-100 border border-gray-300 text-gray-800 px-5 py-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium">
-              <FaEdit className="text-base" />
-              Write a review
-            </button>
-          </Link> */}
+
+          
           <Link to="/write-a-review" className="w-full">
             <button className="w-full bg-gray-100 border border-gray-300 text-gray-800 px-5 py-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium">
               <FaEdit className="text-base" />
@@ -822,84 +799,67 @@ seorating={seo?.seo_rating}
         />
           
         </div>
-        {/* Global Rankings */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
-            Global Rankings
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-            <div className="bg-gradient-to-r from-blue-400 to-blue-500 rounded-lg p-5 text-white shadow">
-              <p className="text-2xl font-bold">
-                #{universityData.rank || "28"}
-              </p>
-              <p className="text-sm opacity-90">in World</p>
-            </div>
-            <div className="bg-gradient-to-r from-green-400 to-green-500 rounded-lg p-5 text-white shadow">
-              <p className="text-2xl font-bold">
-                #{universityData.qs_rank || "181"}
-              </p>
-              <p className="text-sm opacity-90">in Malaysia</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <button className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
-              View ranking details
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
+      <div className="bg-white rounded-xl shadow-md p-6">
+  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+    Global Rankings
+  </h3>
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className="bg-gradient-to-r from-blue-400 to-blue-500 rounded-lg p-5 text-white shadow">
+      <p className="text-2xl font-bold">
+        #{universityData.rank || "397"}
+      </p>
+      <p className="text-sm opacity-90">World Rank</p>
+    </div>
+    <div className="bg-gradient-to-r from-green-400 to-green-500 rounded-lg p-5 text-white shadow">
+      <p className="text-2xl font-bold">
+        {universityData.qs_rank || "1001-1400"}
+      </p>
+      <p className="text-sm opacity-90">QS Rank</p>
+    </div>
+    <div className="bg-gradient-to-r from-purple-400 to-purple-500 rounded-lg p-5 text-white shadow">
+      <p className="text-2xl font-bold">
+        {universityData.times_rank || "1501+"}
+      </p>
+      <p className="text-sm opacity-90">Times Rank</p>
+    </div>
+    {universityData.qs_asia_rank && (
+      <div className="bg-gradient-to-r from-orange-400 to-orange-500 rounded-lg p-5 text-white shadow">
+        <p className="text-2xl font-bold">
+          {universityData.qs_asia_rank}
+        </p>
+        <p className="text-sm opacity-90">QS Asia Rank</p>
+      </div>
+    )}
+  </div>
+</div>
         <PopupForm isOpen={isOpen} onClose={() => setIsOpen(false)}  universityData={universityData} />
 
                <div className="flex flex-col gap-4">
                    {/* Study Options */}
-                    <div className="bg-white rounded-xl shadow-sm p-6 w-full overflow-x-auto">
-    <h2 className="text-lg font-semibold mb-4">Study Options</h2>
-    <div className="flex items-start gap-2">
-      {[
-         { label: "Study Online", bgColor: "bg-green-50", border: "border-green-300", text: "text-green-700", icon: "text-green-500" },
-         { label: "Part Time", bgColor: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", icon: "text-blue-500" },
-         { label: "Full Time", bgColor: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", icon: "text-purple-500" },
-      ].map((option, index) => (
-        <div
-          key={index}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 ${option.bgColor} ${option.border} flex-shrink-0`}
-        >
-          <div className={`w-4 h-4 flex items-center justify-center ${option.icon}`}>
-            <FaCheck className="text-xs" />
-          </div>
-          <span className={`text-sm font-medium whitespace-nowrap ${option.text}`}>
-            {option.label}
-          </span>
+                 <div className="bg-white rounded-xl shadow-sm p-6 w-full">
+  <h2 className="text-lg font-semibold mb-4">Study Options</h2>
+  <div className="grid grid-cols-3 gap-3">
+    {[
+       { label: "Study Online", bgColor: "bg-green-50", border: "border-green-300", text: "text-green-700", icon: "text-green-500" },
+       { label: "Part Time", bgColor: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", icon: "text-blue-500" },
+       { label: "Full Time", bgColor: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", icon: "text-purple-500" },
+    ].map((option, index) => (
+      <div
+        key={index}
+        className={`flex flex-row items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 ${option.bgColor} ${option.border}`}
+      >
+        <div className={`w-4 h-4 flex items-center justify-center ${option.icon}`}>
+          <FaCheck className="text-xs" />
         </div>
-      ))}
-    </div>
+        <span className={`text-sm font-medium whitespace-nowrap ${option.text}`}>
+          {option.label}
+        </span>
+      </div>
+    ))}
   </div>
+</div>
 {/* </div> */}
-        {/* <div className="bg-white rounded-xl shadow-sm p-4">
-          <h2 className="text-base font-semibold mb-4">Study Options</h2>
-          <div className="flex flex-wrap gap-4">
-            {[
-               { label: "Study Online", bg: "bg-green-50", border: "border-green-200", text: "text-green-700", icon: "text-green-500" },
-               { label: "Part Time", bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700", icon: "text-blue-500" },
-               { label: "Full Time", bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-700", icon: "text-purple-500" },
-            ].map((option, index) => (
-              <div
-                key={index}
-                className={`flex items-center gap-3 px-5 py-3 rounded-xl border ${option.bg} ${option.border} cursor-pointer transition`}
-              >
-                <div className={`w-6 h-6 flex items-center justify-center rounded-full border-2 ${option.icon} border-current`}>
-                  <FaCheck className="text-xs" />
-                </div>
-                <span className={`text-sm font-medium ${option.text}`}>
-                  {option.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div> */}
-  
+      
 
 
 </div>
@@ -913,7 +873,7 @@ seorating={seo?.seo_rating}
   
 </div>
            </div>
-         </div>
+         {/* </div> */}
      
 
       {/* Tabs */}
@@ -933,6 +893,7 @@ seorating={seo?.seo_rating}
             </button>
           ))}
         </div>
+        
       </div>
 
       {/* Tab Content */}
@@ -957,13 +918,22 @@ seorating={seo?.seo_rating}
               </motion.div>
             </AnimatePresence>
           </div>
-          {activeTab !== "courses" &&   (
-            <div>
-
-              <GetinTouchUiversity/>
-               <UniversityCoursesCard />
-            </div>
-          )}
+         {activeTab !== "courses" && (
+  <div>
+    {/* Get In Touch Form */}
+    <GetinTouchUiversity />
+    
+    {/* 🎯 Featured Universities - Get In Touch ke neeche */}
+    <div className="mt-1">
+      <FeaturedUniversities />
+    </div>
+    
+    {/* University Courses Card */}
+    <div className="mt-10">
+    <UniversityCoursesCard />
+    </div>
+  </div>
+)}
         </div>
       )}
 
@@ -972,3 +942,4 @@ seorating={seo?.seo_rating}
 };
 
 export default UniversityDetailPage;
+

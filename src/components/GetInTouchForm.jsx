@@ -1,3 +1,5 @@
+
+
 import { useState, useEffect } from "react";
 import api from "../api";
 import {
@@ -129,8 +131,8 @@ const GetInTouchForm = () => {
             <span>Get In Touch</span>
           </h2>
 
-          <div className="grid gap-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <InputWithIcon
                 icon={<FaUser />}
                 type="text"
@@ -157,7 +159,7 @@ const GetInTouchForm = () => {
                 type="hidden"
                 name="source"
                 placeholder=""
-                value={formData.source="Education Malaysia -  Scholarship Page "}
+                value={formData.source="Education Malaysia -  Scholarship Page "}
                 onChange={handleChange}
               />
               <InputWithIcon
@@ -168,52 +170,58 @@ const GetInTouchForm = () => {
                 onChange={handleChange}
               />
             </div>
+{/* Phone Number with Country Code - Shifted Right */}
 
-            <div className="flex gap-1">
-              <select
-                name="country_code"
-                value={formData.country_code}
-                onChange={handleChange}
-                className={`${inputClass} w-1/3 bg-white appearance-none`}
-              >
-                <option value="+91">+91</option>
-                {countriesData.map((c) => (
-                  <option key={c.id} value={`+${c.phonecode}`}>
-                    +{c.phonecode}
-                  </option>
-                ))}
-              </select>
-              <InputWithIcon
-                icon={<FaPhone />}
-                type="tel"
-                name="phone"
-                placeholder="Phone Number"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-                className={`${inputClass} w-2/3`}
-              />
-            </div>
+{/* Phone Number with Country Code - Code text centered */}
+<div className="grid grid-cols-1 gap-3">
+  <div className="flex gap-3">
+    <select
+      name="country_code"
+      value={formData.country_code}
+      onChange={handleChange}
+      className="w-24 flex-shrink-0 px-2 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white appearance-none text-center"
+      style={{ maxWidth: '100px', minWidth: '100px' }}
+    >
+      <option value="+91">+91</option>
+      {countriesData.map((c) => (
+        <option key={c.id} value={`+${c.phonecode}`}>
+          +{c.phonecode}
+        </option>
+      ))}
+    </select>
+    <InputWithIcon
+      icon={<FaPhone />}
+      type="tel"
+      name="phone"
+      placeholder="Phone Number"
+      value={formData.phone}
+      onChange={handleChange}
+      required
+      className={`${inputClass} flex-1`}
+    />
+  </div>
+</div>
 
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                <FaFlag />
-              </div>
-              <select
-                name="nationality"
-                value={formData.nationality}
-                onChange={handleChange}
-                required
-                className={`${inputClass} pl-10 bg-white appearance-none`}
-              >
-                <option value="">Select Nationality</option>
-                {countriesData.map((c) => (
-                  <option key={c.id} value={c.name}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+{/* Nationality - stays same */}
+<div className="relative">
+  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+    <FaFlag />
+  </div>
+  <select
+    name="nationality"
+    value={formData.nationality}
+    onChange={handleChange}
+    required
+    className={`${inputClass} pl-10 bg-white appearance-none`}
+  >
+    <option value="">Select Nationality</option>
+    {countriesData.map((c) => (
+      <option key={c.id} value={c.name}>
+        {c.name}
+      </option>
+    ))}
+  </select>
+</div>
 
             <div className="bg-gray-100 p-4 rounded-lg flex flex-col sm:flex-row items-center gap-4">
               <label className="text-sm font-medium text-gray-700 flex-shrink-0">
@@ -242,7 +250,7 @@ const GetInTouchForm = () => {
                 className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="agree-checkbox">
-                I agree to the {""}
+                I agree to the {" "}
                 <a
                   href="#"
                   className="text-blue-600 hover:underline font-medium"

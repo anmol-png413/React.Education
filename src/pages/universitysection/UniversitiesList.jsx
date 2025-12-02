@@ -7,27 +7,12 @@ import { FaStar } from "react-icons/fa6";
 import { Clock, MapPin, DollarSign, Users, Eye, Book } from "lucide-react";
 import { Helmet } from "react-helmet";
 import api from "../../api";
+import { FeeStructureForm, BrochureForm, CompareUniversitiesForm } from "../../pages/universitysection/universitypopform";
 import { API_URL } from "../../config";
 
 /* ---------------------------
   Enhanced Modal Component
-----------------------------*/
-const Modal = ({ open, title, onClose, children, wide = false }) => {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-auto ${wide ? "w-full max-w-3xl" : "w-full max-w-md"}`}>
-        <div className="flex items-center justify-between border-b px-6 py-4 bg-gray-50">
-          <h3 className="text-xl font-bold text-gray-900">{title}</h3>
-          <button className="text-gray-400 hover:text-gray-600 text-2xl" onClick={onClose}>×</button>
-        </div>
-        <div className="p-6">{children}</div>
-      </div>
-    </div>
-  );
-};
-
+-
 /* ---------------------------
   Dropdown Component
 ----------------------------*/
@@ -43,7 +28,7 @@ const useOutsideAlerter = (ref, callback) => {
   }, [ref, callback]);
 };
 
-const Dropdown = ({ title, options, selectedValue, onSelect }) => {
+const Dropdown = ({ title, options, selectedValue, onSelect, showAllOption = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   useOutsideAlerter(dropdownRef, () => {
@@ -63,6 +48,19 @@ const Dropdown = ({ title, options, selectedValue, onSelect }) => {
       {isOpen && (
         <div className="absolute z-10 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
           <div className="py-1 max-h-60 overflow-y-auto">
+            {/* ✅ ALL UNIVERSITY OPTION */}
+            {showAllOption && (
+              <button
+                onClick={() => {
+                  onSelect("");
+                  setIsOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 font-semibold"
+              >
+                All Universities
+              </button>
+            )}
+            
             {options.map((opt) => (
               <button
                 key={opt.id || opt.name}
@@ -108,6 +106,14 @@ const UniversitiesList = () => {
   const [brochureModalOpen, setBrochureModalOpen] = useState(false);
   const [compareModalOpen, setCompareModalOpen] = useState(false);
   const [selectedUniversity, setSelectedUniversity] = useState(null);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setSuccessModalOpen(true);
+    setTimeout(() => setSuccessModalOpen(false), 2200);
+  };
 
   // Format URL helper
   const formatUrl = (instituteTypeName, stateName) => {
@@ -195,9 +201,14 @@ const UniversitiesList = () => {
           const state = dynamicFilters.states.find((s) => s.name === selectedFilters.state);
           if (state) params.append("state", state.name.toLowerCase());
         }
+        // if (search) params.append("search", search);
+        // // params.append("page", page);
+        // params.append("per_page", 21);  
+        // endpoint = `${endpoint}?${params.toString()}`;
         if (search) params.append("search", search);
-        params.append("page", page);
-        endpoint = `${endpoint}?${params.toString()}`;
+params.append("per_page", 21);  // YE ADD KARO
+params.append("page", page);
+endpoint = `${endpoint}?${params.toString()}`;
 
         const response = await api.get(endpoint, { signal: controller.signal });
         const { data } = response.data;
@@ -208,15 +219,35 @@ const UniversitiesList = () => {
           setDynamicFilters(newDynamicFilters);
         }
 
+        // setSeo(data.seo || {});
+        // setTitle(data.seo?.meta_title || "Universities in Malaysia");
         setSeo(data.seo || {});
-        setTitle(data.seo?.meta_title || "Universities in Malaysia");
+
+// ✅ Custom title logic
+let pageTitle = "All Universities in Malaysia 2024-25";
+if (selectedFilters.instituteType && selectedFilters.state) {
+  pageTitle = `Top ${data.universities?.total || ''} ${selectedFilters.instituteType} Universities in ${selectedFilters.state} 2024-25`;
+} else if (selectedFilters.instituteType) {
+  pageTitle = `Top ${data.universities?.total || ''} ${selectedFilters.instituteType} Universities in Malaysia 2024-25`;
+} else if (selectedFilters.state) {
+  pageTitle = `Top ${data.universities?.total || ''} Universities in ${selectedFilters.state} 2024-25`;
+}
+
+setTitle(pageTitle);
         setUniversities(data.universities?.data || []);
+        // setPagination({
+        //   current_page: data.universities?.current_page || 1,
+        //   last_page: data.universities?.last_page || 1,
+        //   per_page: data.universities?.per_page || 21,
+        //   total: data.universities?.total || 0,
+        // });
+        // ✅ FORCE 21 PER PAGE
         setPagination({
-          current_page: data.universities?.current_page || 1,
-          last_page: data.universities?.last_page || 1,
-          per_page: data.universities?.per_page || 20,
-          total: data.universities?.total || 0,
-        });
+  current_page: data.universities?.current_page || 1,
+  last_page: Math.ceil((data.universities?.total || 0) / 21),  // ✅ FORCE 21
+  per_page: 21,  // ✅ HARDCODE 21
+  total: data.universities?.total || 0,
+});
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error("Error fetching universities:", error);
@@ -259,12 +290,25 @@ const UniversitiesList = () => {
     setSelectedUniversity(uni);
     setBrochureModalOpen(true);
   };
-  const openCompareModal = (uni) => {
-    setSelectedUniversity(uni);
-    setCompareModalOpen(true);
-  };
+  //  const openCompareModal = (uni) => {
+  //   setSelectedUniversity(uni);
+  //   setCompareModalOpen(true);
+  // };
+ 
 
-  const infoText = `Malaysia is home to a diverse range of universities, offering a variety of programs and courses to cater to the educational needs of both local and international students.`;
+  // const infoText = `Malaysia is home to a diverse range of universities, offering a variety of programs and courses to cater to the educational needs of both local and international students.`;
+  const getInfoText = () => {
+  if (selectedFilters.instituteType && selectedFilters.state) {
+    return `Discover top-ranked ${selectedFilters.instituteType.toLowerCase()} universities in ${selectedFilters.state}, offering exceptional programs and world-class facilities.`;
+  } else if (selectedFilters.instituteType) {
+    return `Explore the best ${selectedFilters.instituteType.toLowerCase()} universities in Malaysia, known for their academic excellence and diverse course offerings.`;
+  } else if (selectedFilters.state) {
+    return `Find leading universities in ${selectedFilters.state}, providing quality education and a vibrant campus life.`;
+  }
+  return `Malaysia is home to a diverse range of universities, offering a variety of programs and courses to cater to the educational needs of both local and international students.`;
+};
+
+const infoText = getInfoText();
 
   return (
     <>
@@ -312,12 +356,13 @@ const UniversitiesList = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Dropdown
-              title="Institute Type"
-              options={dynamicFilters.institute_types}
-              selectedValue={selectedFilters.instituteType}
-              onSelect={(value) => handleFilterChange("instituteType", value)}
-            />
+         <Dropdown
+  title="Institute Type"
+  options={dynamicFilters.institute_types}
+  selectedValue={selectedFilters.instituteType}
+  onSelect={(value) => handleFilterChange("instituteType", value)}
+  showAllOption={true}  
+/>
             <Dropdown
               title="State"
               options={dynamicFilters.states}
@@ -351,20 +396,22 @@ const UniversitiesList = () => {
                   key={uni.id}
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 relative"
                 >
-                  {/* Image Section */}
-                  <div className="relative flex items-center justify-center bg-gradient-to-br from-blue-50 to-white p-6 h-48">
-                    <img
-                      src={uni.logo_path ? `${API_URL}${uni.logo_path}` : "/placeholder.png"}
-                      alt={uni.name}
-                      className="max-h-32 w-auto object-contain"
-                    />
-                    
-                    {/* Rating Badge */}
-                    <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-md">
-                      <FaStar className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                      <span className="text-sm font-bold text-gray-800">{uni.rating ?? "4.8"}</span>
-                    </div>
-                  </div>
+                  {/* Image Section - UPDATED */}
+<div className="relative w-full h-48 overflow-hidden bg-gray-100">
+  <img
+    src={uni.banner_path ? `${API_URL}${uni.banner_path}` : "/placeholder.png"}
+    alt={uni.name}
+    className="w-full h-full object-cover"
+  />
+  
+  {/* Rating Badge */}
+  <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-md">
+    <FaStar className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+  <span className="text-sm font-bold text-gray-800">
+  {uni.rating ? parseFloat(uni.rating).toFixed(1) : '0.0'}
+</span>
+  </div>
+</div>
 
                   {/* Content Section */}
                   <div className="p-5">
@@ -376,82 +423,90 @@ const UniversitiesList = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Est. {uni.established || "1970"}</span>
+                      <span>Est. {uni.established_year || "N/A"}</span>
                       </div>
                     </div>
 
-                    {/* University Name */}
+                 
+
                     <Link
-                      to={`/university/${uni.uname}`}
-                      className="font-bold text-gray-800 text-xl group-hover:text-blue-600 mb-3 line-clamp-2 min-h-[3.5rem]"
-                    >
-                      {uni.name}
-                    </Link>
+  to={`/university/${uni.uname || uni.slug}`}
+  className="font-bold text-gray-800 text-xl group-hover:text-blue-600 mb-3 line-clamp-2 min-h-[3.5rem]"
+>
+  {uni.name}
+</Link>
 
+
+
+{/* 
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
-                      {uni.description || "Explore comprehensive programs and world-class education"}
-                    </p>
+                      {uni.description || ""}
+                    </p> */}
+<div className="mb-4" style={{ minHeight: '2.8rem' }}>
+  <p className="text-gray-600...">
+    {uni.shortnote || ""}
+  </p>
+</div>
+                    
 
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-3 bg-blue-50 rounded-xl">
-                        <Book className="w-5 h-5 text-blue-600 mx-auto mb-1" />
-                        <p className="text-lg font-bold text-blue-600">{uni.programs ?? 105}</p>
-                        <p className="text-xs text-gray-600">Programs</p>
-                      </div>
-                      <div className="text-center p-3 bg-green-50 rounded-xl">
-                        <Eye className="w-5 h-5 text-green-600 mx-auto mb-1" />
-                        <p className="text-lg font-bold text-green-600">{uni.views ?? 416}</p>
-                        <p className="text-xs text-gray-600">Views</p>
-                      </div>
-                      <div className="text-center p-3 bg-yellow-50 rounded-xl">
-                        <FaStar className="w-5 h-5 text-yellow-600 mx-auto mb-1 fill-current" />
-                        <p className="text-lg font-bold text-yellow-600">{uni.rating ?? 4.8}</p>
-                        <p className="text-xs text-gray-600">Rating</p>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="space-y-3 mt-auto">
-                      <Link
-                        to={`/university/${uni.uname}`}
-                        className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center group"
-                      >
-                        View Details →
-                           {/* <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" /> */}
-                      </Link>
+                  {/* Stats Grid */}
+<div className="grid grid-cols-3 gap-4 mb-5">
+  <div className="text-center p-3 bg-blue-50 rounded-xl">
+    <Book className="w-5 h-5 text-blue-600 mx-auto mb-1" />
+    <p className="text-lg font-bold text-blue-600">{uni.active_programs_count || 0}</p>
+    <p className="text-xs text-gray-600">Programs</p>
+  </div>
+  <div className="text-center p-3 bg-green-50 rounded-xl">
+    <Eye className="w-5 h-5 text-green-600 mx-auto mb-1" />
+    <p className="text-lg font-bold text-green-600">{uni.views || 0}</p>
+    <p className="text-xs text-gray-600">Views</p>
+  </div>
+  <div className="text-center p-3 bg-yellow-50 rounded-xl">
+    <FaStar className="w-5 h-5 text-yellow-600 mx-auto mb-1 fill-current" />
+    <p className="text-lg font-bold text-yellow-600">
+      {uni.rating ? parseFloat(uni.rating).toFixed(1) : '0.0'}
+    </p>
+    <p className="text-xs text-gray-600">Rating</p>
+  </div>
+</div>
+<div className="space-y-3">
+                   
+      <Link
+    to={`/university/${uni.uname || uni.slug}`}
+    className="cursor-pointer w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center group"
+  >
+    View Details →
+  </Link>
 
                       <div className="grid grid-cols-2 gap-2">
-                        <button
-                          onClick={() => openFeeModal(uni)}
-                          className="py-2 px-3 border-2 border-blue-200 text-blue-600 rounded-xl font-medium hover:bg-blue-50 transition-all duration-200 text-sm"
-                        >
-                          Fee Structure
-                        </button>
+                       <button
+      onClick={() => openFeeModal(uni)}
+      className="cursor-pointer py-2 px-3 border-2 border-blue-200 text-blue-600 rounded-xl font-medium hover:bg-blue-50 transition-all duration-200 text-sm"
+    >
+      Fee Structure
+    </button>
 
-                        <button
-                          onClick={() => openBrochureModal(uni)}
-                          className="py-2 px-3 border-2 border-green-200 text-green-600 rounded-xl font-medium hover:bg-green-50 transition-all duration-200 text-sm"
-                        >
-                          Brochure
-                        </button>
+                       <button
+      onClick={() => openBrochureModal(uni)}
+      className="cursor-pointer py-2 px-3 border-2 border-green-200 text-green-600 rounded-xl font-medium hover:bg-green-50 transition-all duration-200 text-sm"
+    >
+      Brochure
+    </button>
 
-                        {/* <button
-                          onClick={() => openCompareModal(uni)}
-                          className="border border-gray-300 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-50 transition text-xs"
-                        >
-                          Compare
-                        </button> */}
+                      
                       </div>
                     </div>
 
                     {/* Compare Universities Link */}
-                    <button
-                      onClick={() => openCompareModal(uni)}
-                      className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200 text-sm"
-                    >
-                      Compare Universities
-                    </button>
+      <button
+  onClick={() => setCompareModalOpen(true)}
+  className="cursor-pointer w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200 text-sm mt-3"
+>
+  Compare Universities
+</button>
+<div>
+  </div>
+
                   </div>
                 </div>
               ))}
@@ -482,238 +537,48 @@ const UniversitiesList = () => {
           )}
         </main>
       </div>
-
+         
       {/* Fee Structure Modal */}
-      <Modal
-        open={feeModalOpen}
-        title="Fee Structure Request"
+      <FeeStructureForm
+        universityName={selectedUniversity?.name}
+        isOpen={feeModalOpen}
         onClose={() => setFeeModalOpen(false)}
-      >
-        <div className="text-center mb-4">
-          <p className="text-gray-700">Get detailed fee information for {selectedUniversity?.name}</p>
-        </div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            alert(`Fee request submitted for ${selectedUniversity?.name}`);
-            setFeeModalOpen(false);
-          }}
-          className="space-y-4"
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-              <input required className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter your first name" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-              <input required className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter your last name" />
-            </div>
-          </div>
+        onSuccess={showSuccess}
+      />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
-            <select required className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-              <option value="">Select your nationality</option>
-              <option value="indian">Indian</option>
-              <option value="malaysian">Malaysian</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-            <input required type="email" className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter your email" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-            <div className="flex gap-2">
-              <select className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                <option value="+91">+91</option>
-                <option value="+60">+60</option>
-                <option value="+1">+1</option>
-              </select>
-              <input required type="tel" className="flex-1 border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter your phone number" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Interested Course</label>
-            <select required className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-              <option value="">Select a course</option>
-              <option value="engineering">Engineering</option>
-              <option value="business">Business</option>
-              <option value="medicine">Medicine</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Study Level</label>
-            <select required className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-              <option value="">Select study level</option>
-              <option value="undergraduate">Undergraduate</option>
-              <option value="postgraduate">Postgraduate</option>
-              <option value="phd">PhD</option>
-            </select>
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setFeeModalOpen(false)} className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 font-medium hover:bg-gray-50">Cancel</button>
-            <button type="submit" className="flex-1 px-4 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700">Request Fee Structure</button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Download Brochure Modal */}
-      <Modal
-        open={brochureModalOpen}
-        title="Download Brochure"
+      {/* Brochure Modal */}
+      <BrochureForm
+        universityName={selectedUniversity?.name}
+        isOpen={brochureModalOpen}
         onClose={() => setBrochureModalOpen(false)}
-      >
-        <div className="text-center mb-4">
-          <p className="text-gray-700">Get the brochure for {selectedUniversity?.name}</p>
-        </div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            alert(`Brochure request submitted for ${selectedUniversity?.name}`);
-            setBrochureModalOpen(false);
-          }}
-          className="space-y-4"
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-              <input required className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none" placeholder="Enter your first name" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-              <input required className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none" placeholder="Enter your last name" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-            <input required type="email" className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none" placeholder="Enter your email" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-            <div className="flex gap-2">
-              <select className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
-                <option value="+91">+91</option>
-                <option value="+60">+60</option>
-              </select>
-              <input required type="tel" className="flex-1 border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none" placeholder="Enter your phone number" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
-            <select required className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
-              <option value="">Select your nationality</option>
-              <option value="indian">Indian</option>
-              <option value="malaysian">Malaysian</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setBrochureModalOpen(false)} className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 font-medium hover:bg-gray-50">Cancel</button>
-            <button type="submit" className="flex-1 px-4 py-2.5 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700">Download Brochure</button>
-          </div>
-        </form>
-      </Modal>
+        onSuccess={showSuccess}
+      />
 
       {/* Compare Universities Modal */}
-      <Modal
-        open={compareModalOpen}
-        title="Compare Universities"
+      <CompareUniversitiesForm
+        universities={universities}
+        isOpen={compareModalOpen}
         onClose={() => setCompareModalOpen(false)}
-        wide={true}
-      >
-        <div className="text-center mb-6">
-          <p className="text-gray-700">Select up to 3 universities to compare their features</p>
+        onSuccess={showSuccess}
+      />
+
+      {/* Success Modal */}
+      {successModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-xl p-6 text-center max-w-sm">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">{successMessage}</h3>
+            <p className="text-gray-600">We'll get back to you soon.</p>
+          </div>
         </div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            alert(`Comparison request submitted for ${selectedUniversity?.name}`);
-            setCompareModalOpen(false);
-          }}
-          className="space-y-4"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Select First University</label>
-              <select required className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none">
-                <option value="">Choose University</option>
-                {universities.slice(0, 10).map((u) => (
-                  <option key={u.id} value={u.id}>{u.name}</option>
-                ))}
-              </select>
-            </div>
+      )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Select Second University</label>
-              <select required className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none">
-                <option value="">Choose University</option>
-                {universities.slice(0, 10).map((u) => (
-                  <option key={u.id} value={u.id}>{u.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Select Third University (Optional)</label>
-            <select className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none">
-              <option value="">Choose University</option>
-              {universities.slice(0, 10).map((u) => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Your Email</label>
-            <input required type="email" className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="Enter your email" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
-            <select required className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none">
-              <option value="">Select your nationality</option>
-              <option value="indian">Indian</option>
-              <option value="malaysian">Malaysian</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-            <div className="flex gap-2">
-              <select className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none">
-                <option value="+91">+91</option>
-                <option value="+60">+60</option>
-                <option value="+1">+1</option>
-              </select>
-              <input required type="tel" className="flex-1 border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="Enter your phone number" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Comparison Criteria (Optional)</label>
-            <textarea className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none" rows={3} placeholder="What specific aspects would you like to compare? (e.g., fees, programs, facilities)"></textarea>
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setCompareModalOpen(false)} className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 font-medium hover:bg-gray-50">Cancel</button>
-            <button type="submit" className="flex-1 px-4 py-2.5 rounded-lg bg-purple-600 text-white font-medium hover:bg-purple-700">Generate Comparison</button>
-          </div>
-        </form>
-      </Modal>
+      
+      
     </>
   );
 };

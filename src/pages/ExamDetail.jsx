@@ -59,9 +59,51 @@ const LoadingSkeleton = () => (
 );
 
 
-// Function to format HTML content from the API
+// // Function to format HTML content from the API
+// const formatExamDescription = (html) => {
+//     if (!html) return ''; // Handle cases where description might be null or empty
+
+//     return html
+//         // Paragraphs
+//         .replace(/<p>/g, `<p class="mb-4 text-gray-700 leading-relaxed">`)
+        
+//         // Unordered Lists
+//         .replace(/<ul>/g, `<ul class="list-disc pl-5 mb-4 space-y-2 text-gray-700">`)
+//         .replace(/<li>/g, `<li class="ml-4">`)
+        
+//         // Ordered Lists
+//         .replace(/<ol>/g, `<ol class="list-decimal pl-5 mb-4 space-y-2 text-gray-700">`)
+        
+//         // Strong/Bold text
+//         .replace(/<strong>/g, `<strong class="font-semibold text-gray-900">`)
+        
+//         // Anchor tags (links)
+//         .replace(/<a href="(.*?)"/g, `<a href="$1" class="text-blue-600 hover:text-blue-800 underline transition">`)
+
+//         // Images within the description
+//         .replace(/<img src="(.*?)"/g, (match, src) => {
+//             const fullSrc = src.startsWith('http') ? src : `https://www.educationmalaysia.in/storage/${src}`;
+//             return `<img src="${fullSrc}" class="w-full h-auto max-w-lg mx-auto my-6 rounded-lg shadow-md"`;
+//         })
+
+//         // Headings (Updated to match image)
+//         // Specific styling for H2 as per screenshot
+//         .replace(/<h2>(.*?)<\/h2>/g, `<h2 class="text-3xl font-extrabold text-blue-900 border-l-4 border-blue-600 pl-4 mb-5 mt-8">${'$1'}</h2>`) // text-3xl, font-extrabold, deeper blue border, increased left padding
+//         // General styling for H3 and H4
+//         .replace(/<h3>(.*?)<\/h3>/g, `<h3 class="text-2xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4 mt-6">${'$1'}</h3>`)
+//         .replace(/<h4>(.*?)<\/h4>/g, `<h4 class="text-xl font-semibold text-gray-700 mb-3 mt-5">${'$1'}</h4>`)
+        
+//         // Tables (Updated to match image)
+//         .replace(/<table/g, `<table class="min-w-full rounded-xl overflow-hidden shadow-md my-6 border-collapse"`) // Added rounded-xl, overflow-hidden, shadow-md, border-collapse
+//         .replace(/<thead>/g, `<thead class="bg-blue-600 text-white text-left">`) // Solid blue background
+//         .replace(/<th>/g, `<th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">`) // Increased padding, uppercase
+//         .replace(/<tbody>/g, `<tbody class="bg-white">`) // Set body background
+//         .replace(/<tr>/g, `<tr class="even:bg-blue-50">`) // Alternating row colors as in image
+//         .replace(/<td>/g, `<td class="px-6 py-4 text-gray-800 text-base border-b border-gray-200">`); // Increased padding, base text size, subtle bottom border
+// };
+
 const formatExamDescription = (html) => {
-    if (!html) return ''; // Handle cases where description might be null or empty
+    if (!html) return '';
 
     return html
         // Paragraphs
@@ -86,22 +128,20 @@ const formatExamDescription = (html) => {
             return `<img src="${fullSrc}" class="w-full h-auto max-w-lg mx-auto my-6 rounded-lg shadow-md"`;
         })
 
-        // Headings (Updated to match image)
-        // Specific styling for H2 as per screenshot
-        .replace(/<h2>(.*?)<\/h2>/g, `<h2 class="text-3xl font-extrabold text-blue-900 border-l-4 border-blue-600 pl-4 mb-5 mt-8">${'$1'}</h2>`) // text-3xl, font-extrabold, deeper blue border, increased left padding
-        // General styling for H3 and H4
+        // Headings
+        .replace(/<h2>(.*?)<\/h2>/g, `<h2 class="text-3xl font-extrabold text-blue-900 border-l-4 border-blue-600 pl-4 mb-5 mt-8">${'$1'}</h2>`)
         .replace(/<h3>(.*?)<\/h3>/g, `<h3 class="text-2xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4 mt-6">${'$1'}</h3>`)
         .replace(/<h4>(.*?)<\/h4>/g, `<h4 class="text-xl font-semibold text-gray-700 mb-3 mt-5">${'$1'}</h4>`)
         
-        // Tables (Updated to match image)
-        .replace(/<table/g, `<table class="min-w-full rounded-xl overflow-hidden shadow-md my-6 border-collapse"`) // Added rounded-xl, overflow-hidden, shadow-md, border-collapse
-        .replace(/<thead>/g, `<thead class="bg-blue-600 text-white text-left">`) // Solid blue background
-        .replace(/<th>/g, `<th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">`) // Increased padding, uppercase
-        .replace(/<tbody>/g, `<tbody class="bg-white">`) // Set body background
-        .replace(/<tr>/g, `<tr class="even:bg-blue-50">`) // Alternating row colors as in image
-        .replace(/<td>/g, `<td class="px-6 py-4 text-gray-800 text-base border-b border-gray-200">`); // Increased padding, base text size, subtle bottom border
+        // Tables - UPDATED FOR MOBILE RESPONSIVENESS
+        .replace(/<table/g, `<div class="overflow-x-auto -mx-4 sm:mx-0 my-6"><table class="min-w-full rounded-xl overflow-hidden shadow-md border-collapse"`)
+        .replace(/<\/table>/g, `</table></div>`) // Close the wrapper div
+        .replace(/<thead>/g, `<thead class="bg-blue-600 text-white text-left">`)
+        .replace(/<th>/g, `<th scope="col" class="px-4 sm:px-6 py-3 sm:py-4 font-semibold uppercase tracking-wider text-sm sm:text-base whitespace-nowrap">`)
+        .replace(/<tbody>/g, `<tbody class="bg-white">`)
+        .replace(/<tr>/g, `<tr class="even:bg-blue-50 hover:bg-blue-100 transition">`)
+        .replace(/<td>/g, `<td class="px-4 sm:px-6 py-3 sm:py-4 text-gray-800 text-sm sm:text-base border-b border-gray-200 whitespace-nowrap">`);
 };
-
 const Sidebar = () => (
     <div className="space-y-6 lg:sticky lg:top-10">
         <div className="bg-white rounded-2xl shadow p-6">
@@ -130,7 +170,7 @@ const ExamDetail = () => {
     const [error, setError] = useState(false);
     const [seo, setSeo] = useState({});
 
-    const API_IMAGE_BASE_URL = "https://www.educationmalaysia.in/"; 
+    const API_IMAGE_BASE_URL = "https://www.educationmalaysia.in/storage/"; 
 
     useEffect(() => {
         const fetchExam = async () => {

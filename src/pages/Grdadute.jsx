@@ -16,39 +16,24 @@ function App() {
 
   return (
     <div className="">
-      {/* <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-sm z-50">
-      
-
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t">
-            <div className="px-4 py-4 space-y-3">
-              <button onClick={() => scrollToSection('about')} className="block w-full text-left text-gray-700 hover:text-emerald-600 py-2">About</button>
-              <button onClick={() => scrollToSection('benefits')} className="block w-full text-left text-gray-700 hover:text-emerald-600 py-2">Benefits</button>
-              <button onClick={() => scrollToSection('eligibility')} className="block w-full text-left text-gray-700 hover:text-emerald-600 py-2">Eligibility</button>
-              <button onClick={() => scrollToSection('documents')} className="block w-full text-left text-gray-700 hover:text-emerald-600 py-2">Documents</button>
-              <button onClick={() => scrollToSection('faq')} className="block w-full text-left text-gray-700 hover:text-emerald-600 py-2">FAQ</button>
-              <button onClick={() => scrollToSection('apply')} className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors w-full">Apply Now</button>
-            </div>
-          </div>
-        )}
-      </header> */}
+   
 
       <main className="pt-16">
-        <section className="relative bg-gradient-to-br from-emerald-50 via-white to-teal-50 py-20 sm:py-32">
+        <section className="relative bg-gradient-to-br from-blue-50 via-white to-blue-50 py-20 sm:py-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-4xl mx-auto">
-              <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
                 <Globe className="w-4 h-4" />
                 Live & Work in Malaysia
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                Graduate Pass — Your Gateway to <span className="text-emerald-600">12 Months</span> in Malaysia
+                Graduate Pass — Your Gateway to <span className="text-blue-600">12 Months</span> in Malaysia
               </h1>
               <p className="text-lg sm:text-xl text-gray-600 mb-10 leading-relaxed">
                 Stay, work, and explore opportunities in Malaysia for up to one year after graduation — no employer sponsorship required.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button onClick={() => scrollToSection('apply')} className="bg-emerald-600 text-white px-8 py-4 rounded-lg hover:bg-emerald-700 transition-all transform hover:scale-105 shadow-lg font-medium flex items-center justify-center gap-2">
+                <button onClick={() => scrollToSection('apply')} className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-emerald-700 transition-all transform hover:scale-105 shadow-lg font-medium flex items-center justify-center gap-2">
                   Start Your Application
                   <ArrowRight className="w-5 h-5" />
                 </button>
@@ -153,56 +138,56 @@ function App() {
 
             <div className="max-w-4xl mx-auto">
               <div className="space-y-4">
-                <div className="flex gap-4 p-6 bg-emerald-50 rounded-xl border-2 border-emerald-100">
-                  <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <div className="flex gap-4 p-6 bg-blue-50 rounded-xl border-2 border-blue-100">
+                  <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-bold text-gray-900 mb-1">Bachelor's Degree or Higher</h3>
                     <p className="text-gray-600">Completed from a recognized Malaysian institution</p>
                   </div>
                 </div>
 
-                <div className="flex gap-4 p-6 bg-emerald-50 rounded-xl border-2 border-emerald-100">
-                  <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <div className="flex gap-4 p-6 bg-blue-50 rounded-xl border-2 border-blue-100">
+                  <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-bold text-gray-900 mb-1">Valid Student Pass</h3>
                     <p className="text-gray-600">Must be active at the time of application</p>
                   </div>
                 </div>
 
-                <div className="flex gap-4 p-6 bg-emerald-50 rounded-xl border-2 border-emerald-100">
-                  <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <div className="flex gap-4 p-6 bg-blue-50 rounded-xl border-2 border-blue-100">
+                  <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-bold text-gray-900 mb-1">Passport Validity</h3>
                     <p className="text-gray-600">Must be valid for at least 18 months from application date</p>
                   </div>
                 </div>
 
-                <div className="flex gap-4 p-6 bg-emerald-50 rounded-xl border-2 border-emerald-100">
-                  <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <div className="flex gap-4 p-6 bg-blue-50 rounded-xl border-2 border-blue-100">
+                  <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-bold text-gray-900 mb-1">Graduation Confirmation</h3>
                     <p className="text-gray-600">Letter from institution confirming completion or expected graduation date</p>
                   </div>
                 </div>
 
-                <div className="flex gap-4 p-6 bg-emerald-50 rounded-xl border-2 border-emerald-100">
-                  <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <div className="flex gap-4 p-6 bg-blue-50 rounded-xl border-2 border-blue-100">
+                  <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-bold text-gray-900 mb-1">Health Insurance</h3>
                     <p className="text-gray-600">Active coverage for the full Graduate Pass duration (1 year)</p>
                   </div>
                 </div>
 
-                <div className="flex gap-4 p-6 bg-emerald-50 rounded-xl border-2 border-emerald-100">
-                  <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <div className="flex gap-4 p-6 bg-blue-50 rounded-xl border-2 border-blue-100">
+                  <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-bold text-gray-900 mb-1">Malaysian Sponsor</h3>
                     <p className="text-gray-600">Personal bond and Malaysian citizen sponsor with minimum monthly salary of RM 1,500</p>
                   </div>
                 </div>
 
-                <div className="flex gap-4 p-6 bg-emerald-50 rounded-xl border-2 border-emerald-100">
-                  <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <div className="flex gap-4 p-6 bg-blue-50 rounded-xl border-2 border-blue-100">
+                  <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-bold text-gray-900 mb-1">Clean Legal Record</h3>
                     <p className="text-gray-600">No legal convictions in Malaysia</p>
@@ -225,7 +210,7 @@ function App() {
           </div>
         </section>
 
-        <section className="py-16 bg-emerald-600 text-white">
+        <section className="py-16 bg-blue-600 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold mb-4">Eligible Nationalities</h2>
@@ -327,7 +312,7 @@ function App() {
 
                 <div className="space-y-8">
                   <div className="relative flex gap-6">
-                    <div className="flex-shrink-0 w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg relative z-10">
+                    <div className="flex-shrink-0 w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg relative z-10">
                       1
                     </div>
                     <div className="flex-1 pt-3">
@@ -337,7 +322,7 @@ function App() {
                   </div>
 
                   <div className="relative flex gap-6">
-                    <div className="flex-shrink-0 w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg relative z-10">
+                    <div className="flex-shrink-0 w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg relative z-10">
                       2
                     </div>
                     <div className="flex-1 pt-3">
@@ -347,7 +332,7 @@ function App() {
                   </div>
 
                   <div className="relative flex gap-6">
-                    <div className="flex-shrink-0 w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg relative z-10">
+                    <div className="flex-shrink-0 w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg relative z-10">
                       3
                     </div>
                     <div className="flex-1 pt-3">
@@ -357,7 +342,7 @@ function App() {
                   </div>
 
                   <div className="relative flex gap-6">
-                    <div className="flex-shrink-0 w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg relative z-10">
+                    <div className="flex-shrink-0 w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg relative z-10">
                       4
                     </div>
                     <div className="flex-1 pt-3">
@@ -367,7 +352,7 @@ function App() {
                   </div>
 
                   <div className="relative flex gap-6">
-                    <div className="flex-shrink-0 w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg relative z-10">
+                    <div className="flex-shrink-0 w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg relative z-10">
                       5
                     </div>
                     <div className="flex-1 pt-3">
@@ -392,7 +377,7 @@ function App() {
               <details className="bg-white p-6 rounded-xl shadow-sm group">
                 <summary className="font-bold text-gray-900 cursor-pointer list-none flex items-center justify-between">
                   <span>Who can sponsor my Graduate Pass?</span>
-                  <ArrowRight className="w-5 h-5 text-emerald-600 transform group-open:rotate-90 transition-transform" />
+                  <ArrowRight className="w-5 h-5 text-blue-600 transform group-open:rotate-90 transition-transform" />
                 </summary>
                 <p className="mt-4 text-gray-600 leading-relaxed">
                   A Malaysian citizen with a minimum monthly income of RM 1,500 can act as your sponsor. Sponsor documents must include a signed & officially stamped declaration (by a Sessions Court Judge, Magistrate, Commissioner for Oaths, or Notary Public), 3 months' payslips, and NRIC copy.
@@ -402,7 +387,7 @@ function App() {
               <details className="bg-white p-6 rounded-xl shadow-sm group">
                 <summary className="font-bold text-gray-900 cursor-pointer list-none flex items-center justify-between">
                   <span>Can my dependents join me?</span>
-                  <ArrowRight className="w-5 h-5 text-emerald-600 transform group-open:rotate-90 transition-transform" />
+                  <ArrowRight className="w-5 h-5 text-blue-600 transform group-open:rotate-90 transition-transform" />
                 </summary>
                 <p className="mt-4 text-gray-600 leading-relaxed">
                   Yes — family members who currently hold a valid Dependent Pass can apply to extend their stay under the Dependent Graduate Pass for the same duration. Prepare dependent-specific documents (passport, dependent pass, insurance, personal bond, sponsor details).
@@ -412,7 +397,7 @@ function App() {
               <details className="bg-white p-6 rounded-xl shadow-sm group">
                 <summary className="font-bold text-gray-900 cursor-pointer list-none flex items-center justify-between">
                   <span>How long is the Graduate Pass valid?</span>
-                  <ArrowRight className="w-5 h-5 text-emerald-600 transform group-open:rotate-90 transition-transform" />
+                  <ArrowRight className="w-5 h-5 text-blue-600 transform group-open:rotate-90 transition-transform" />
                 </summary>
                 <p className="mt-4 text-gray-600 leading-relaxed">
                   Typically 12 months after graduation. The pass may include a Multiple Entry Visa — confirm details on your approval letter.
@@ -422,7 +407,7 @@ function App() {
               <details className="bg-white p-6 rounded-xl shadow-sm group">
                 <summary className="font-bold text-gray-900 cursor-pointer list-none flex items-center justify-between">
                   <span>What special rule applies to India & China?</span>
-                  <ArrowRight className="w-5 h-5 text-emerald-600 transform group-open:rotate-90 transition-transform" />
+                  <ArrowRight className="w-5 h-5 text-blue-600 transform group-open:rotate-90 transition-transform" />
                 </summary>
                 <p className="mt-4 text-gray-600 leading-relaxed">
                   Eligibility for Indian and Chinese nationals is extended until 31 December 2026, with approvals considered case-by-case. Applicants must include a letter of good conduct from their institution or embassy.
@@ -432,7 +417,7 @@ function App() {
           </div>
         </section>
 
-        <section id="apply" className="py-20 bg-gradient-to-br from-emerald-600 to-teal-600 text-white">
+        <section id="apply" className="py-20 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-3xl sm:text-4xl font-bold mb-6">Ready to Apply?</h2>
@@ -502,7 +487,7 @@ function App() {
           </div>
         </section>
 
-        <section className="py-12 bg-gray-900 text-white">
+        {/* <section className="py-12 bg-gray-900 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-3">
@@ -522,7 +507,7 @@ function App() {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
       </main>
     </div>
   );
@@ -530,17 +515,3 @@ function App() {
 
 export default App;
 
-// import React from "react";
-
-// const Graduate = () => {
-//   return (
-//     <div className="pt-24 px-6 text-center min-h-screen bg-gradient-to-b from-blue-50 to-white">
-//       <h1 className="text-4xl font-bold text-blue-900 mb-6">Malaysia Graduate Pass</h1>
-//       <p className="max-w-2xl mx-auto text-gray-700 text-lg">
-//         This page provides detailed information about the Malaysia Graduate Pass for anmol walia.
-//       </p>
-//     </div>
-//   );
-// };
-
-// export default Graduate;

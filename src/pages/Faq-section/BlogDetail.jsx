@@ -2,16 +2,63 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../api";
 import GetInTouchForm from "../../components/GetInTouchForm";
-import { CalendarDays, ArrowRight, User } from "lucide-react";
+import { CalendarDays, ArrowRight, User, Clock } from "lucide-react";
 import { Helmet } from "react-helmet";
 import { Link } from "react-router-dom";
 import { Home, Layers } from "lucide-react";
 
+
 // Format the dynamic HTML content
-function formatBlogHTML(html) {
+function formatBlogHTML(html, sectionIndex = null) {
   if (!html) return "";
 
   let formatted = html;
+  let h2Counter = 0;
+  let h3Counter = 0;
+
+  // ✅ Sabhi <a> tags ko blue + underline styling de do
+  formatted = formatted.replace(
+    /<a /g,
+    `<a style="color: #3B82F6; text-decoration: underline; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='#1D4ED8'" onmouseout="this.style.color='#3B82F6'" `
+  );
+
+  // ✅ H2 headings ko ID de do
+  formatted = formatted.replace(
+    /<h2>(.*?)<\/h2>/g,
+    (match, content) => {
+      const id = sectionIndex !== null ? `section-${sectionIndex}-h2-${h2Counter}` : `h2-${h2Counter}`;
+      h2Counter++;
+      return `<h2 id="${id}" style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 1rem 0 1rem;
+        line-height: 1.3;
+        border-bottom: 2px solid #E5E7EB;
+        padding-bottom: 0.5rem;
+        scroll-margin-top: 100px;
+      ">${content}</h2>`;
+    }
+  );
+
+  // ✅ H3 headings ko ID de do
+  formatted = formatted.replace(
+    /<h3>(.*?)<\/h3>/g,
+    (match, content) => {
+      const id = sectionIndex !== null ? `section-${sectionIndex}-h3-${h3Counter}` : `h3-${h3Counter}`;
+      h3Counter++;
+      return `<h3 id="${id}" style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1F2937;
+   margin: 0rem 0 0.0rem;  
+        line-height: 1.4;
+        scroll-margin-top: 100px;
+      ">${content}</h3>`;
+    }
+  );
 
   // Paragraphs with modern styling
   formatted = formatted.replace(
@@ -21,35 +68,7 @@ function formatBlogHTML(html) {
       line-height: 1.8;
       font-size: 1.125rem;
       color: #374151;
-      margin-bottom: 1.5rem;
-    ">`
-  );
-
-  // Main headings
-  formatted = formatted.replace(
-    /<h2>/g,
-    `<h2 style="
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      font-size: 1.875rem;
-      font-weight: 700;
-      color: #111827;
-      margin: 2rem 0 1rem;
-      line-height: 1.3;
-      border-bottom: 2px solid #E5E7EB;
-      padding-bottom: 0.5rem;
-    ">`
-  );
-
-  // Sub headings
-  formatted = formatted.replace(
-    /<h3>/g,
-    `<h3 style="
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #1F2937;
-      margin: 1.5rem 0 1rem;
-      line-height: 1.4;
+     margin: 0rem 0 0rem 0;  
     ">`
   );
 
@@ -58,8 +77,8 @@ function formatBlogHTML(html) {
     /<ul>/g,
     `<ul style="
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      padding-left: 1.5rem;
-      margin: 1.5rem 0;
+      padding-left: 0.5rem;
+   margin: 0rem 0 0rem 0;  
       list-style-type: disc;
       color: #374151;
     ">`
@@ -68,7 +87,7 @@ function formatBlogHTML(html) {
   formatted = formatted.replace(
     /<li>/g,
     `<li style="
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
       line-height: 1.6;
       font-size: 1.125rem;
     ">`
@@ -89,44 +108,61 @@ function formatBlogHTML(html) {
       border-radius: 0.375rem;
     ">`
   );
+// ✅ TABLE WRAPPER - Horizontal Scroll Enable
+formatted = formatted.replace(
+  /<table/g,
+  `<div style="
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0;
+    padding: 0;
+    background-color: #FFFFFF;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  ">
+  <table style="
+    width: 100%;
+    min-width: 600px;
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin: 0;
+    background-color: #FFFFFF;
+  "`
+);
 
-  // Tables with modern styling
-  formatted = formatted.replace(
-    /<table/g,
-    `<table style="
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1.5rem 0;
-      font-size: 1rem;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-      border-radius: 0.5rem;
-      overflow: hidden;
-    "`
-  );
+formatted = formatted.replace(
+  /<\/table>/g,
+  `</table></div>`
+);
 
   // Table headers
-  formatted = formatted.replace(
-    /<th/g,
-    `<th style="
-      background-color: #F3F4F6;
-      padding: 0.75rem 1rem;
-      text-align: left;
-      font-weight: 600;
-      color: #111827;
-      border-bottom: 2px solid #E5E7EB;
-    "`
-  );
+// Table headers - CLEAN VERSION
+formatted = formatted.replace(
+  /<th/g,
+  `<th style="
+    background-color: #1E40AF;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: #FFFFFF;
+    border: none;
+    white-space: nowrap;
+    vertical-align: middle;
+  "`
+);
 
-  // Table cells
-  formatted = formatted.replace(
-    /<td/g,
-    `<td style="
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid #E5E7EB;
-      color: #374151;
-    "`
-  );
+// Table cells
+formatted = formatted.replace(
+  /<td/g,
+  `<td style="
+    padding: 0.5rem 0.75rem; 
+    border-bottom: 1px solid #E5E7EB;
+    color: #374151;
+    background-color: transparent;
+  "`
+);
+
+  
 
   // Clean up empty elements
   formatted = formatted.replace(/<span[^>]*>\s*<\/span>/g, "");
@@ -209,25 +245,40 @@ const BlogDetail = () => {
     </Helmet>
 
  {/* Breadcrumb */}
-      <div className="w-full bg-blue-50 shadow-sm">
-        <div className="max-w-screen-xl mx-auto px-4 py-3">
-          <div className="flex items-center space-x-3 text-sm text-gray-600">
-            <Link to="/" className="flex items-center gap-1 hover:underline hover:text-blue-500">
-              <Home size={18} /> Home
-            </Link>
-            <span>/</span>
-            <h1 className="flex items-center gap-1 ">
-              <Layers size={18} /> Blog
-            </h1>
-            <span>/</span>
-            <h1 className="flex items-center gap-1 ">
-              <Layers size={18} /> {blog.headline}
-            </h1>
-          </div>
-        </div>
-      </div>
-
-
+    {/* ✅ BREADCRUMB - NO BLUE, LIGHT BACKGROUND */}
+<div className="w-full bg-gray-50 shadow-sm border-b">
+  <div className="max-w-screen-xl mx-auto px-4 py-3">
+    <div className="flex items-center flex-wrap gap-2 text-sm text-gray-700">
+      <Link 
+        to="/" 
+        className="flex items-center gap-1 hover:text-blue-600 transition-colors font-medium flex-shrink-0"
+      >
+        <Home size={16} /> Home
+      </Link>
+      <span className="text-gray-400 flex-shrink-0">•</span>
+      
+      <Link 
+        to="/blogs" 
+        className="flex items-center gap-1 hover:text-blue-600 transition-colors font-medium flex-shrink-0"
+      >
+        <Layers size={16} /> Blog
+      </Link>
+      <span className="text-gray-400 flex-shrink-0">•</span>
+      
+      <Link 
+        to={`/blog/category/${category}`} 
+        className="hover:text-blue-600 transition-colors font-medium capitalize flex-shrink-0"
+      >
+        {category.replace(/-/g, ' ')}
+      </Link>
+      <span className="text-gray-400 flex-shrink-0">•</span>
+      
+      <span className="text-gray-900 font-semibold">
+        {blog.headline}
+      </span>
+    </div>
+  </div>
+</div>
 
     <div className="bg-gray-50 p-6 space-y-6">
       <div className="max-w-7xl mx-auto px-4 lg:px-0 flex flex-col lg:flex-row gap-8">
@@ -237,72 +288,140 @@ const BlogDetail = () => {
             {blog.headline}
           </h1>
 
-          <div className="flex items-center text-sm text-gray-600 gap-4">
-            {blog.author && (
-              <span className="flex items-center gap-1">
-                <User className="w-4 h-4 text-gray-500" />
-                <span>{blog.author.name || "Unknown"}</span>
-              </span>
-            )}
-            <span className="flex items-center gap-1">
-              <CalendarDays className="w-4 h-4 text-gray-500" />
-              {new Date(blog.created_at).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })}
-            </span>
-          </div>
+      <div className="flex items-center text-sm text-gray-600 gap-4">
+  {blog.author && (
+    <span className="flex items-center gap-1">
+      <User className="w-4 h-4 text-gray-500" />
+      <span>{blog.author.name || "Unknown"}</span>
+    </span>
+  )}
+  <span className="flex items-center gap-1">
+    <CalendarDays className="w-4 h-4 text-gray-500" />
+    {new Date(blog.created_at).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })}
+  </span>
+  
+  {/* ✅ TIME ADDED HERE */}
+  <span className="flex items-center gap-1">
+    <Clock className="w-4 h-4 text-gray-500" />
+    {new Date(blog.created_at).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })}
+  </span>
+</div>
 
           {blog.thumbnail_path && (
             <img
-              src={`https://www.educationmalaysia.in/${blog.thumbnail_path}`}
+              src={`https://www.educationmalaysia.in/storage/${blog.thumbnail_path}`}
               alt={blog.headline}
               className="w-full rounded-lg shadow"
             />
           )}
-
-          {blog.description && (
-            <div
-              className="prose max-w-none text-gray-800"
-              dangerouslySetInnerHTML={{
-                __html: formatBlogHTML(blog.description),
-              }}
-            />
+{/* ✅ TABLE OF CONTENTS */}
+{/* ✅ TABLE OF CONTENTS - HEADING CENTER, CONTENT LEFT */}
+{blog.parent_contents?.length > 0 && (
+  <div className="bg-white border-2 border-gray-200 rounded-lg p-6 my-6">
+    <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Table of Content</h2>
+    
+    <ol className="space-y-3 list-decimal list-inside pl-4" style={{ color: '#1F2937' }}>
+      {blog.parent_contents.map((section, index) => (
+        <li key={index} style={{ color: '#1F2937' }}>
+         <a 
+  href={`#section-${index}`} 
+  className="text-blue-600 hover:text-blue-800 underline font-bold cursor-pointer transition-colors duration-200"
+>
+            {section.title}
+          </a>
+          
+          {section.child_contents?.length > 0 && (
+            <ol className="ml-6 mt-2 space-y-1 list-decimal list-inside" style={{ color: '#1F2937' }}>
+              {section.child_contents.map((child, i) => (
+                <li key={i} style={{ color: '#1F2937' }}>
+                  <a 
+                    href={`#subsection-${index}-${i}`} 
+                    className="text-blue-500 hover:text-blue-700 underline text-sm font-semibold cursor-pointer transition-colors duration-200"
+                  >
+                    {child.title}
+                  </a>
+                </li>
+              ))}
+            </ol>
           )}
+        </li>
+      ))}
+    </ol>
+  </div>
+)}
 
-          {blog.parent_contents?.length > 0 && (
-            <div className="space-y-8">
-              {blog.parent_contents.map((section, index) => (
-                <div key={index}>
-                  <h2 className="flex items-center gap-2 text-2xl font-bold text-[#003B73] mb-3  border-l-4 border-blue-500">
-                    <span className="w-1 h-6  inline-block rounded-sm"></span>
-                    {section.title}
-                  </h2>
+<div className="flex gap-4 justify-center my-6">
+  {/* ✅ APPLY HERE */}
+  <a 
+    href="/signup" 
+    className="px-8 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-600 hover:text-white transition text-center"
+  >
+    APPLY HERE
+  </a>
+  
+  {/* ✅ ENQUIRE NOW - Smooth Scroll with JS */}
+  <button 
+    onClick={() => {
+      const element = document.getElementById('get-in-touch');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }}
+    className="px-8 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-600 hover:text-white transition text-center cursor-pointer"
+  >
+    ENQUIRE NOW
+  </button>
+</div>
+
+        
+          {blog.description && (
+  <div
+    className="prose max-w-none text-gray-800"
+    dangerouslySetInnerHTML={{
+      __html: formatBlogHTML(blog.description, 'main'),
+    }}
+  />
+)}
+
+
+        
+                  {blog.parent_contents?.length > 0 && (
+  <div className="space-y-8">
+    {blog.parent_contents.map((section, index) => (
+      <div key={index} id={`section-${index}`}>  {/* ✅ YE ID ADD KIYA */}
+        <h2 className="flex items-center gap-2 text-2xl font-bold text-[#003B73] mb-3  border-l-4 border-blue-500">{section.title}</h2>
                   <div
                     className="prose max-w-none text-gray-700"
                     dangerouslySetInnerHTML={{
                       __html: formatBlogHTML(section.description),
                     }}
                   />
-                  {section.child_contents?.length > 0 && (
-                    <div className="ml-4 mt-6 space-y-6 border-l-2 border-gray-200 pl-4">
-                      {section.child_contents.map((child, i) => (
-                        <div key={i}>
-                          <h3 className="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-2">
-                            <span className="w-1 h-5 bg-blue-400 inline-block rounded-sm"></span>
-                            {child.title}
-                          </h3>
-                          <div
-                            className="prose max-w-none text-gray-600"
-                            dangerouslySetInnerHTML={{
-                              __html: formatBlogHTML(child.description),
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
+              {section.child_contents?.length > 0 && (
+  <div className="ml-4 mt-6 space-y-6 border-l-2 border-gray-200 pl-4">
+    {section.child_contents.map((child, i) => (
+      <div key={i} id={`subsection-${index}-${i}`}>  {/* ✅ YE ID ADD KARO */}
+        <h3 className="flex items-center gap-2 text-xl font-semibold text-gray-800 mb-2">
+          <span className="w-1 h-5 bg-blue-400 inline-block rounded-sm"></span>
+          {child.title}
+        </h3>
+        <div
+          className="prose max-w-none text-gray-600"
+          dangerouslySetInnerHTML={{
+            __html: formatBlogHTML(child.description),
+          }}
+        />
+      </div>
+    ))}
+  </div>
+)}
                 </div>
               ))}
             </div>
@@ -331,11 +450,16 @@ const BlogDetail = () => {
 )}
 
 
-          <div className="">
+          {/* <div className="">
             <GetInTouchForm />
-          </div>
+          </div> */}
+          <div id="get-in-touch" className="scroll-mt-20">
+  <GetInTouchForm />
+</div>
 
           {relatedBlogs.length > 0 && (
+
+
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold mb-4">Related Blogs</h2>
               <div className="space-y-4">
@@ -347,7 +471,7 @@ const BlogDetail = () => {
                   >
                     {item.thumbnail_path && (
                       <img
-                        src={`https://www.educationmalaysia.in/${item.thumbnail_path}`}
+                        src={`https://www.educationmalaysia.in/storage/${item.thumbnail_path}`}
                         alt={item.headline}
                         className="w-16 h-16 object-cover rounded-md"
                       />
@@ -398,3 +522,4 @@ const BlogDetail = () => {
 };
 
 export default BlogDetail;
+

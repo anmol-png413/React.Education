@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { FiChevronDown } from "react-icons/fi";
@@ -7,10 +8,12 @@ import { Home, Layers } from "lucide-react";
 import api from "../api"; // Adjust the import based on your project structure
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import {Helmet } from "react-helmet";
-import ApplicationModal from "../components/ApplicationModal"; // adjust path as needed // Import Helmet for SEO management
+import { Filter, X } from "lucide-react"; 
+
 
 import {
   MapPin,
+
   Building,
   Star,
   BookOpen,
@@ -21,9 +24,9 @@ import {
   LayoutGrid,
    ChevronUp,
     ChevronDown,
-    Filter,
+   
      Heart ,
-       X,           
+               
   ArrowRight,  
   Clock,       
   Calendar,    
@@ -94,8 +97,8 @@ const Courses = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('list');
-    const [showApplicationModal, setShowApplicationModal] = useState(false);
-const [selectedCourse, setSelectedCourse] = useState(null);
+
+const [sortBy, setSortBy] = useState('relevance');
 
   const infoText = `or Arts, our platform offers detailed insights to guide your choices. 
 From undergraduate to postgraduate levels, we provide expert advice and up-to-date information on course requirements, eligibility, and university rankings. 
@@ -111,13 +114,19 @@ const [showComparisonModal, setShowComparisonModal] = useState(false);
   const [totalCourses, setTotalCourses] = useState(0);
 
   // Add selected filters state
-  const [selectedFilters, setSelectedFilters] = useState({
-    levels: "",
-    categories: "",
-    specialization: "",
-    intakes: "",
-    study_modes: "",
-  });
+ const [selectedFilters, setSelectedFilters] = useState({
+  levels: "",
+  categories: "",
+  specialization: "",
+  intakes: "",
+  study_modes: "",
+});
+
+// ✅ YE NAYA STATE ADD KARO (selectedFilters ke NEECHE)
+const [lastSelectedFilter, setLastSelectedFilter] = useState({
+  key: "", // filter type (levels, categories, etc.)
+  value: "" // filter value
+});
   // Active filter count
 const activeFilterCount = Object.values(selectedFilters).filter(val => val !== "").length;
 
@@ -142,6 +151,28 @@ const activeFilterCount = Object.values(selectedFilters).filter(val => val !== "
   const [lastPage, setLastPage] = useState(1);
   const [paginationLinks, setPaginationLinks] = useState([]);
    const [appliedCourses, setAppliedCourses] = useState(new Set());
+
+
+   // ✅ Dynamic placeholder generate karne ke liye
+const getSearchPlaceholder = () => {
+  const activeFilters = [];
+  
+  if (selectedFilters.levels) {
+    activeFilters.push(selectedFilters.levels.replace(/-/g, ' ').toUpperCase());
+  }
+  if (selectedFilters.categories) {
+    activeFilters.push(selectedFilters.categories.replace(/-/g, ' '));
+  }
+  if (selectedFilters.specialization) {
+    activeFilters.push(selectedFilters.specialization.replace(/-/g, ' '));
+  }
+  
+  if (activeFilters.length > 0) {
+    return `Search in ${activeFilters.join(', ')} courses...`;
+  }
+  
+  return "Search courses...";
+};
 
   const fetchFilterOptions = async (filtersToApply = {}) => {
     try {
@@ -254,45 +285,130 @@ const activeFilterCount = Object.values(selectedFilters).filter(val => val !== "
     setSearch(searchQuery || "");
   }, [location.search]);
 
-  useEffect(() => {
-    fetchCourses(currentPage, selectedFilters, search);
-    fetchFilterOptions(selectedFilters);
-  }, [currentPage, selectedFilters, search]);
+// ✅ URL se sirf page number load karo, filters mat override karo
+useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  
+  // Sirf page number update karo
+  const pageFromURL = params.get('page');
+  if (pageFromURL) {
+    setCurrentPage(parseInt(pageFromURL));
+  }
+}, [location.search]);
+
+  // ✅ Auto-apply after sign-up redirect
+// ✅ Auto-apply after sign-up redirect
+useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  const programId = params.get('program_id');
+  const redirect = params.get('redirect');
+  const token = localStorage.getItem("token");
+
+  if (programId && redirect === 'courses' && token) {
+    console.log("🔥 Auto-applying for program:", programId);
+    
+    api.get(`/student/apply-program/${programId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then(() => {
+      toast.success("Program applied successfully!");
+      
+      // ✅ YAHAN FIX HAI - parseInt() use karo
+      setAppliedCourses(prev => new Set([...prev, parseInt(programId)]));
+      
+      // URL clean karo
+      const newParams = new URLSearchParams(location.search);
+      newParams.delete('program_id');
+      newParams.delete('redirect');
+      navigate({ search: newParams.toString() }, { replace: true });
+    })
+    .catch((error) => {
+      if (error.response?.status === 409) {
+        toast.warn("You have already applied for this program.");
+        
+        // ✅ YAHAN BHI parseInt() use karo
+        setAppliedCourses(prev => new Set([...prev, parseInt(programId)]));
+      } else {
+        console.error("Auto-apply failed:", error);
+        toast.error("Failed to apply. Please try again.");
+      }
+      
+      // URL clean karo
+      const newParams = new URLSearchParams(location.search);
+      newParams.delete('program_id');
+      newParams.delete('redirect');
+      navigate({ search: newParams.toString() }, { replace: true });
+    });
+  }
+}, [location.search, navigate]);
 
 
-  const handleFilterChange = (filterType, value) => {
-    const params = new URLSearchParams(location.search);
-    params.delete('search');
-    navigate({ search: params.toString() });
-    setSearch("");
 
-    setSelectedFilters(prevFilters => ({
-      ...prevFilters,
-      [filterType]: prevFilters[filterType] === value ? "" : value,
-    }));
-    setCurrentPage(1);
+
+useEffect(() => {
+  fetchCourses(currentPage, selectedFilters, search);
+  fetchFilterOptions(selectedFilters);
+}, [currentPage, selectedFilters, search]);
+
+
+
+const handleFilterChange = (filterType, value) => {
+  const newValue = selectedFilters[filterType] === value ? "" : value;
+  
+  const updatedFilters = {
+    ...selectedFilters,
+    [filterType]: newValue,
   };
-
+  
+  setSelectedFilters(updatedFilters);
+  
+  // ✅ Clean URL banao
+  if (newValue) {
+    const cleanSlug = newValue.toLowerCase().replace(/\s+/g, "-");
+    const cleanPath = `/${cleanSlug}-courses`;
+    navigate(cleanPath);
+  } else {
+    // Agar filter clear kiya, to check karo koi aur filter selected hai
+    const otherFilters = Object.entries(updatedFilters).filter(
+      ([key, val]) => val !== "" && key !== filterType
+    );
+    
+    if (otherFilters.length > 0) {
+      const [lastKey, lastValue] = otherFilters[otherFilters.length - 1];
+      const cleanSlug = String(lastValue).toLowerCase().replace(/\s+/g, "-");
+      navigate(`/${cleanSlug}-courses`);
+    } else {
+      navigate('/courses-in-malaysia');
+    }
+  }
+  
+  setCurrentPage(1);
+};
   const toggleFilter = (key) => {
     setOpenFilters(prev => ({ ...prev, [key]: !prev[key] }));
   };
+const handleReset = () => {
+  // ✅ URL se SABHI filters remove karo
+  const params = new URLSearchParams();
+  
+  navigate({ search: params.toString() });
+  setSearch("");
 
-  const handleReset = () => {
-    const params = new URLSearchParams(location.search);
-    params.delete('search');
-    navigate({ search: params.toString() });
-    setSearch("");
-
-    setSelectedFilters({
-      levels: "",
-      categories: "",
-      specializations: "",
-      intakes: "",
-      study_modes: "",
-    });
-    setCurrentPage(1);
-  };
-
+  setSelectedFilters({
+    levels: "",
+    categories: "",
+    specialization: "",
+    intakes: "",
+    study_modes: "",
+  });
+  
+  // ✅ Last filter bhi clear karo
+  setLastSelectedFilter({ key: "", value: "" });
+  
+  setCurrentPage(1);
+};
   const handleUniversityClick = (universityName) => {
     if (!universityName || typeof universityName !== "string") return;
     const slug = universityName
@@ -313,29 +429,82 @@ const activeFilterCount = Object.values(selectedFilters).filter(val => val !== "
     navigate({ search: params.toString() });
     setCurrentPage(1);
   };
-  const handleApplyNow = async (courseOrId) => {
-  console.log("🔥 Apply Now clicked!", courseOrId); // Debug ke liye
+const handleSortChange = (e) => {
+  const sortValue = e.target.value;
+  setSortBy(sortValue);
   
-  const token = localStorage.getItem("token");
+  let sortedCourses = [...coursesData];
+  
+  switch(sortValue) {
+    case 'rating':
+      sortedCourses.sort((a, b) => (b.university?.rating || 0) - (a.university?.rating || 0));
+      break;
+    case 'fee-low':
+      sortedCourses.sort((a, b) => {
+        const feeA = parseFloat((a.fee || "0").replace(/[^0-9.]/g, ''));
+        const feeB = parseFloat((b.fee || "0").replace(/[^0-9.]/g, ''));
+        return feeA - feeB;
+      });
+      break;
+    case 'fee-high':
+      sortedCourses.sort((a, b) => {
+        const feeA = parseFloat((a.fee || "0").replace(/[^0-9.]/g, ''));
+        const feeB = parseFloat((b.fee || "0").replace(/[^0-9.]/g, ''));
+        return feeB - feeA;
+      });
+      break;
+    case 'duration':
+      sortedCourses.sort((a, b) => {
+        const durA = parseFloat((a.duration || "0").replace(/[^0-9.]/g, ''));
+        const durB = parseFloat((b.duration || "0").replace(/[^0-9.]/g, ''));
+        return durA - durB;
+      });
+      break;
+    default: // relevance
+      break;
+  }
+  
+  setCoursesData(sortedCourses);
+};
 
-  // Check if courseOrId is an object (course) or just ID
-  const courseId = typeof courseOrId === 'object' ? courseOrId.id : courseOrId;
-  const courseData = typeof courseOrId === 'object' ? courseOrId : null;
-
-  if (!token) {
-    // User not logged in
-    if (courseData) {
-      // Show modal with course data
-      setSelectedCourse(courseData);
-      setShowApplicationModal(true);
-    } else {
-      // Redirect to sign-up
-      navigate(`/sign-up?program_id=${courseId}`);
-    }
+// ✅ NAYA CODE - Direct course detail pe redirect`
+const handleViewDetails = (course) => {
+  if (!course || !course.university?.name) return;
+  
+  // University slug
+  const universitySlug = course.university.name
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]/g, "");
+  
+  // Course slug
+  const courseSlug = course.slug || 
+    (course.course_name ? 
+      course.course_name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") 
+      : null);
+  
+  if (!courseSlug) {
+    console.error("Course slug missing");
     return;
   }
+  
+  // ✅ Direct course detail page pe redirect
+  navigate(`/university/${universitySlug}/courses?courseSlug=${courseSlug}`);
+};
+const handleApplyNow = async (courseOrId) => {
+  console.log("🔥 Apply Now clicked!", courseOrId);
+  
+  const token = localStorage.getItem("token");
+  const courseId = typeof courseOrId === 'object' ? courseOrId.id : courseOrId;
 
-  // User logged in - Apply directly via API
+  // ✅ Agar user logged in NAHI hai, to sign-up page pe redirect karo
+  if (!token) {
+    console.log("❌ No token found - Redirecting to sign-up");
+    navigate(`/signup?program_id=${courseId}&redirect=courses`);
+    return; // ⚠️ Yahan RETURN zaruri hai
+  }
+
+  // ✅ Agar user logged in HAI, to direct apply karo
   try {
     await api.get(`/student/apply-program/${courseId}`, {
       headers: {
@@ -345,20 +514,16 @@ const activeFilterCount = Object.values(selectedFilters).filter(val => val !== "
 
     toast.success("Program applied successfully!");
     setAppliedCourses(prev => new Set(prev).add(courseId));
-    navigate("/student/profile");
   } catch (error) {
     if (error.response?.status === 409) {
       toast.warn("You have already applied for this program.");
       setAppliedCourses(prev => new Set(prev).add(courseId));
-      navigate("/student/profile");
     } else {
       console.error("Apply failed:", error);
       toast.error("Something went wrong while applying.");
     }
   }
 };
-
-  
 const handleAddToCompare = (course) => {
   if (comparisonCourses.length >= 4) {
     toast.warn("You can compare maximum 4 courses");
@@ -387,11 +552,6 @@ const handleCompare = () => {
   }
   setShowComparisonModal(true);
 };
-
-
-
-
-
   const toggleShowMore = () => setShowMore(!showMore);
   return (
     <>
@@ -467,14 +627,14 @@ const handleCompare = () => {
                     Fee: {item.fee || "1 lakh"}
                   </p>
 
-                  <button
-                    className="mt-3 text-sm text-red-500 hover:underline"
-                    onClick={() =>
-                      setCompareList(compareList.filter((_, i) => i !== index))
-                    }
-                  >
-                    Remove
-                  </button>
+                <button
+  className="mt-3 text-sm text-red-500 hover:text-red-700 hover:underline hover:scale-110 transition-all duration-200 cursor-pointer"
+  onClick={() =>
+    setCompareList(compareList.filter((_, i) => i !== index))
+  }
+>
+  Remove
+</button>
                 </div>
               ))}
 
@@ -488,54 +648,66 @@ const handleCompare = () => {
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-            <button
+        <button
   onClick={handleCompare}
   disabled={comparisonCourses.length < 2}
-  className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${
+  className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
     comparisonCourses.length >= 2
-      ? 'bg-orange-500 hover:bg-orange-600 text-white'
+      ? 'bg-orange-500 hover:bg-orange-600 hover:shadow-lg hover:scale-105 text-white cursor-pointer'
       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
   }`}
 >
   🔍 Compare {comparisonCourses.length > 0 && `(${comparisonCourses.length})`}
 </button>
-              <button
-                onClick={() => setCompareList([])}
-                className="border px-5 py-2 rounded-full text-sm font-semibold"
-              >
-                Clear All
-              </button>
+           <button
+  onClick={() => setCompareList([])}
+  className="border border-gray-300 px-5 py-2 rounded-full text-sm font-semibold hover:bg-gray-100 hover:border-gray-400 hover:shadow-md hover:scale-105 transition-all duration-200 cursor-pointer"
+>
+  Clear All
+</button>
             </div>
           </div>
         </div>
       )}
-
-      {/* BreadcrumbBar */}
-      <div className="w-full bg-blue-50 shadow-sm">
-        <div className="max-w-screen-xl mx-auto px-4 py-3">
-          <div className="flex items-center space-x-3 text-sm text-gray-600">
-            <Link
-              to="/"
-              className="flex items-center gap-1 hover:underline hover:text-blue-500"
-            >
-              <Home size={18} /> Home
-            </Link>
-            <span>/</span>
-            <Link
-              to="/courses-in-malaysia"
-              className="flex items-center gap-1 hover:underline hover:text-blue-500"
-            >
-              <Layers size={18} />
-              Courses in Malaysia
-            </Link>
-          </div>
-        </div>
-      </div>
-{/* <div className="flex flex-col md:flex-row bg-gradient-to-br from-blue-50 to-white p-4 gap-6 min-h-screen"> */}
-
+<div className="w-full bg-blue-50 shadow-sm">
+  <div className="max-w-screen-xl mx-auto px-4 py-3">
+    <div className="flex items-center flex-wrap gap-2 text-sm text-gray-600">
+      <Link to="/" className="flex items-center gap-1 hover:underline hover:text-blue-500">
+        <Home size={18} /> Home
+      </Link>
+      <span>/</span>
+      <Link to="/courses-in-malaysia" className="flex items-center gap-1 hover:underline hover:text-blue-500">
+        <Layers size={18} />
+        Courses in Malaysia
+      </Link>
       
-    {/* </div>   */}
-    {/* )} */}
+      {/* ✅ URL path se filter name nikalo */}
+      {(() => {
+        const path = location.pathname;
+        
+        // Extract filter name from clean URL
+        if (path.includes('-courses')) {
+          const filterName = path
+            .replace('/', '')
+            .replace('-courses', '')
+            .replace(/-/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase());
+          
+          return (
+            <>
+              <span>/</span>
+              <span className="font-semibold text-blue-600">
+                {filterName}
+              </span>
+            </>
+          );
+        }
+        
+        return null;
+      })()}
+    </div>
+  </div>
+</div>
   {/* Mobile Filter Drawer */}
   {showMobileFilter && (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex">
@@ -560,15 +732,15 @@ const handleCompare = () => {
         </div>
 
         {activeFilterCount > 0 && (
-          <button
-            onClick={() => {
-              handleReset();
-              setShowMobileFilter(false);
-            }}
-            className="text-sm text-blue-600 hover:text-blue-700 font-semibold hover:underline"
-          >
-            Clear All Filters
-          </button>
+         <button
+  onClick={() => {
+    handleReset();
+    setShowMobileFilter(false);
+  }}
+  className="text-sm text-blue-600 hover:text-blue-700 font-semibold hover:underline"
+>
+  Clear All Filters
+</button>
         )}
 
         {/* Mobile Filters */}
@@ -600,23 +772,23 @@ const handleCompare = () => {
                     const value = item.slug || item.name || item.month || item.study_mode || item;
                     const display = item.name || item.slug || item.month || item.study_mode || item;
                     return (
-                      <label
-                        key={item.id || value}
-                        className="flex items-center space-x-3 py-2.5 cursor-pointer hover:bg-blue-50 rounded-lg px-3 transition-all group"
-                      >
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                          checked={selectedFilters[key] === value}
-                          onChange={() => {
-                            handleFilterChange(key, value);
-                            setShowMobileFilter(false);
-                          }}
-                        />
-                        <span className="text-gray-700 text-sm font-medium group-hover:text-blue-700">
-                          {display}
-                        </span>
-                      </label>
+  <label
+  key={item.id || value}
+  className="flex items-center gap-2 py-1.5 cursor-pointer hover:bg-blue-50 rounded-lg pl-0 pr-2 transition-all group"
+>
+  <input
+    type="checkbox"
+    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 flex-shrink-0"
+    checked={selectedFilters[key] === value}
+    onChange={() => {
+      handleFilterChange(key, value);
+      setShowMobileFilter(false);
+    }}
+  />
+  <span className="text-gray-700 text-sm font-medium group-hover:text-blue-700 text-left">
+    {display}
+  </span>
+</label>
                     );
                   })}
                 </div>
@@ -634,10 +806,10 @@ const handleCompare = () => {
         {/* New Modern Header */}
         <div className="bg-gradient-to-br from-blue-50 to-white p-4 min-h-screen">
       <div className="bg-gradient-to-br from-blue-50 to-white">
-  <div className="max-w-[1600px] mx-auto px-4 py-6">
+  <div className="max-w-[1600px] mx-auto px-4 py-2">
   
   {/* ✅ Header SABSE UPAR - FILTER SE PEHLE */}
-  <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-4">
+<div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-4 mt-0">
     <div className="flex flex-col gap-3">
       {/* Top Row - Title & Search */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
@@ -648,106 +820,227 @@ const handleCompare = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1 lg:w-96">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search courses, universities..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearch(search);
-                }
-              }}
-              className="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors font-medium"
-            />
-          </div>
-        </div>
+     
       </div>
 
-      {/* Sort & View Mode Row */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pt-3 border-t border-gray-200">
-        {/* Left: Sort By Dropdown */}
-        <div className="flex items-center gap-3">
-          <ArrowUpDown className="w-5 h-5 text-gray-600" />
-          <span className="text-sm font-semibold text-gray-700">Sort by:</span>
-          <select
-            className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors font-medium text-sm bg-white cursor-pointer hover:border-gray-300"
-          >
-            <option value="relevance">Most Relevant</option>
-            <option value="rating">Highest Rated</option>
-            <option value="fee-low">Fee: Low to High</option>
-            <option value="fee-high">Fee: High to Low</option>
-            <option value="duration">Duration</option>
-          </select>
-        </div>
+     {/* ✅ Dynamic Info Box - Har filter ke according alag text */}
+<div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mt-2 shadow-sm">
+  <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+    {(() => {
+      const path = location.pathname;
+      
+      // ============ LEVELS FILTERS ============
+      if (path.includes('pre-university')) {
+        return showMore 
+          ? `Discover a list of ${totalCourses} PRE-UNIVERSITY courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering PRE-UNIVERSITY degree programs. Enroll directly in PRE-UNIVERSITY courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} PRE-UNIVERSITY courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025...`;
+      } 
+      else if (path.includes('diploma')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} DIPLOMA courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering DIPLOMA degree programs. Enroll directly in DIPLOMA courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} DIPLOMA courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025...`;
+      }
+      else if (path.includes('under-graduate')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} UNDER-GRADUATE courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering UNDER-GRADUATE degree programs. Enroll directly in UNDER-GRADUATE courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} UNDER-GRADUATE courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures...`;
+      }
+      else if (path.includes('post-graduate-diploma')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} POST-GRADUATE-DIPLOMA courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering POST-GRADUATE-DIPLOMA degree programs. Enroll directly in POST-GRADUATE-DIPLOMA courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} POST-GRADUATE-DIPLOMA courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      else if (path.includes('post-graduate')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} POST-GRADUATE courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering POST-GRADUATE degree programs. Enroll directly in POST-GRADUATE courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} POST-GRADUATE courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures...`;
+      }
+      
+      // ============ CATEGORIES FILTERS ============
+      else if (path.includes('a-levels')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} A-LEVELS courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering A-LEVELS degree programs. Enroll directly in A-LEVELS courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} A-LEVELS courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures...`;
+      }
+      else if (path.includes('certificate')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} CERTIFICATE courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering CERTIFICATE degree programs. Enroll directly in CERTIFICATE courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} CERTIFICATE courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      else if (path.includes('business-and-management')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} BUSINESS AND MANAGEMENT courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering BUSINESS AND MANAGEMENT degree programs. Enroll directly in BUSINESS AND MANAGEMENT courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} BUSINESS AND MANAGEMENT courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      else if (path.includes('creative-arts-and-design')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} CREATIVE ARTS AND DESIGN courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering CREATIVE ARTS AND DESIGN degree programs. Enroll directly in CREATIVE ARTS AND DESIGN courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} CREATIVE ARTS AND DESIGN courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      else if (path.includes('education-and-training')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} EDUCATION AND TRAINING courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering EDUCATION AND TRAINING degree programs. Enroll directly in EDUCATION AND TRAINING courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} EDUCATION AND TRAINING courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      
+      // ============ SPECIALIZATION FILTERS ============
+      else if (path.includes('engineering-and-technology')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} ENGINEERING AND TECHNOLOGY courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering ENGINEERING AND TECHNOLOGY degree programs. Enroll directly in ENGINEERING AND TECHNOLOGY courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} ENGINEERING AND TECHNOLOGY courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      else if (path.includes('computer-science')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} COMPUTER SCIENCE courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering COMPUTER SCIENCE degree programs. Enroll directly in COMPUTER SCIENCE courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} COMPUTER SCIENCE courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      else if (path.includes('medicine-and-health')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} MEDICINE AND HEALTH courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering MEDICINE AND HEALTH degree programs. Enroll directly in MEDICINE AND HEALTH courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} MEDICINE AND HEALTH courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      
+      // ============ STUDY MODES FILTERS ============
+      else if (path.includes('full-time')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} FULL-TIME courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering FULL-TIME degree programs. Enroll directly in FULL-TIME courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} FULL-TIME courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures...`;
+      }
+      else if (path.includes('part-time')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} PART-TIME courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering PART-TIME degree programs. Enroll directly in PART-TIME courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} PART-TIME courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      else if (path.includes('online')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} ONLINE courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering ONLINE degree programs. Enroll directly in ONLINE courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} ONLINE courses offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      
+      // ============ INTAKES FILTERS ============
+      else if (path.includes('january')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} courses with JANUARY intake offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering courses with JANUARY intake. Enroll directly in courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} courses with JANUARY intake offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      else if (path.includes('february')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} courses with FEBRUARY intake offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering courses with FEBRUARY intake. Enroll directly in courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} courses with FEBRUARY intake offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      else if (path.includes('march')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} courses with MARCH intake offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering courses with MARCH intake. Enroll directly in courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} courses with MARCH intake offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      else if (path.includes('april')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} courses with APRIL intake offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering courses with APRIL intake. Enroll directly in courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} courses with APRIL intake offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      else if (path.includes('may')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} courses with MAY intake offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering courses with MAY intake. Enroll directly in courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} courses with MAY intake offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      else if (path.includes('september')) {
+        return showMore
+          ? `Discover a list of ${totalCourses} courses with SEPTEMBER intake offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements, fee structures, intake schedules for 2025, study modes, and recommendations for the best universities and colleges offering courses with SEPTEMBER intake. Enroll directly in courses through EducationMalaysia.in.`
+          : `Discover a list of ${totalCourses} courses with SEPTEMBER intake offered by the Top universities and colleges in Malaysia. Gather valuable information such as entry requirements...`;
+      }
+      
+      // ============ DEFAULT TEXT ============
+      else {
+        return showMore 
+          ? infoText 
+          : infoText.slice(0, 180) + "...";
+      }
+    })()}
+  </p>
+  <button
+    onClick={toggleShowMore}
+    className="mt-3 text-blue-600 text-sm font-semibold hover:underline focus:outline-none"
+  >
+    {showMore ? "Show Less" : "Show More"}
+  </button>
+</div>
+      
+     
 
-        {/* Right: List/Grid Toggle - ✅ FUNCTIONAL */}
-        <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
-          <button
-            onClick={() => setViewMode('list')}
-            className={`p-2 rounded-lg transition-all duration-200 ${
-              viewMode === 'list'
-                ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-            title="List View"
-          >
-            <List className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`p-2 rounded-lg transition-all duration-200 ${
-              viewMode === 'grid'
-                ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-            title="Grid View"
-          >
-            <LayoutGrid className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+      {/* ✅ Sort by: Text + Dropdown | Search Bar | List/Grid */}
+<div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-3 border-t border-gray-200">
+  
+  {/* Left: Sort by */}
+  <div className="flex items-center gap-2 flex-wrap">
+    <ArrowUpDown className="w-5 h-5 text-gray-600 flex-shrink-0" />
+    <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">Sort by:</span>
+    <select
+      value={sortBy}
+      onChange={handleSortChange}
+      className="flex-1 sm:flex-none px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors font-medium text-sm bg-white cursor-pointer hover:border-gray-300"
+    >
+    
+      <option value="rating">Highest Rated</option>
+      <option value="duration">Duration</option>
+    </select>
+  </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <button 
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md font-semibold transition-all"
-          onClick={() => handleSearch(search)}
-        >
-          Search
-        </button>
-        <button
-          className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg shadow-md font-semibold transition-all"
-          onClick={handleReset}
-        >
-          Reset
-        </button>
-      </div>
 
-      {/* Expandable Info Box */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mt-2 shadow-sm">
-        <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-          {showMore ? infoText : infoText.slice(0, 180) + "..."}
-        </p>
-        <button
-          onClick={toggleShowMore}
-          className="mt-3 text-blue-600 text-sm font-semibold hover:underline focus:outline-none"
-        >
-          {showMore ? "Show Less" : "Show More"}
-        </button>
-      </div>
+  {/* Right: Search + Toggle */}
+  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+    {/* Search Bar */}
+    <div className="relative w-full sm:w-64 md:w-80">
+      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+     <input
+  type="text"
+  placeholder={getSearchPlaceholder()} 
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  onKeyPress={(e) => {
+    if (e.key === 'Enter') {
+      handleSearch(search);
+    }
+  }}
+  className="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors font-medium text-sm"
+/>
+    </div>
+ {/* ✅ List/Grid Toggle - AB LEFT SIDE PE */}
+    <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1 self-center sm:self-auto">
+      <button
+        onClick={() => setViewMode('list')}
+        className={`p-2 rounded-lg transition-all duration-200 ${
+          viewMode === 'list'
+            ? 'bg-white text-blue-600 shadow-sm'
+            : 'text-gray-600 hover:text-gray-900'
+        }`}
+        title="List View"
+      >
+        <List className="w-5 h-5" />
+      </button>
+      <button
+        onClick={() => setViewMode('grid')}
+        className={`p-2 rounded-lg transition-all duration-200 ${
+          viewMode === 'grid'
+            ? 'bg-white text-blue-600 shadow-sm'
+            : 'text-gray-600 hover:text-gray-900'
+        }`}
+        title="Grid View"
+      >
+        <LayoutGrid className="w-5 h-5" />
+      </button>
+    </div>
+  </div>
+</div>
+   
+     
     </div>
   </div>
 
   {/* ✅ FILTER & COURSES - NEECHE */}
-  {/* <div className="flex flex-col md:flex-row gap-6"> */}
+
   <div className="flex flex-col lg:flex-row gap-6 items-start">
     {/* Mobile Filter Button */}
-    {/* <div className="md:hidden flex justify-end"> */}
-    {/* Mobile Filter Button */}
+   
 <div className="lg:hidden flex justify-end mb-4">
       <button
         className="bg-blue-700 text-white px-4 py-2 rounded-xl shadow-md"
@@ -761,7 +1054,7 @@ const handleCompare = () => {
     <>
     {loading ? <FilterPanelSkeleton /> : (
       // <div className="hidden lg:block w-[280px] min-w-[280px] flex-shrink-0 bg-white border border-gray-200 p-5 rounded-xl shadow-md space-y-6 text-base">
-      <div className="hidden lg:block w-[280px] min-w-[280px] flex-shrink-0 bg-white border border-gray-200 p-5 rounded-xl shadow-md space-y-6 text-base sticky top-4 self-start max-h-[calc(100vh-2rem)] overflow-y-auto">
+      <div className="hidden lg:block w-[280px] min-w-[280px] flex-shrink-0 bg-white border border-gray-200 p-5 rounded-xl shadow-md space-y-6 text-base sticky top-4 self-start max-h-[calc(100vh-2rem)] overflow-y-auto scrollbar-hide">
      <div className="flex justify-between items-center mb-2">
       <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
         <Filter className="w-5 h-5 text-blue-600" />
@@ -811,20 +1104,20 @@ const handleCompare = () => {
                 const value = item.slug || item.name || item.month || item.study_mode || item;
                 const display = item.name || item.slug || item.month || item.study_mode || item;
                 return (
-                  <label
-                    key={item.id || value}
-                    className="flex items-center gap-3 py-2 cursor-pointer hover:bg-blue-50 rounded-lg px-3 transition-all duration-200 group"
-                  >
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                      checked={selectedFilters[key] === value}
-                      onChange={() => handleFilterChange(key, value)}
-                    />
-                    <span className="text-gray-700 text-sm font-medium group-hover:text-blue-700 transition-colors">
-                      {display}
-                    </span>
-                  </label>
+ <label
+  key={item.id || value}
+  className="flex items-center gap-2 py-1.5 cursor-pointer hover:bg-blue-50 rounded-lg pl-0 pr-2 transition-all duration-200 group"
+>
+  <input
+    type="checkbox"
+    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer flex-shrink-0"
+    checked={selectedFilters[key] === value}
+    onChange={() => handleFilterChange(key, value)}
+  />
+  <span className="text-gray-700 text-sm font-medium group-hover:text-blue-700 transition-colors text-left">
+    {display}
+  </span>
+</label>
                 );
               })}
             </div>
@@ -837,23 +1130,63 @@ const handleCompare = () => {
      </>
 
     {/* Course List */}
-{/* <div className="flex-1 min-w-0 space-y-6"> */}
-<div className="flex-1 min-w-0 max-w-full space-y-6">
+
+{/* <div className="flex-1 min-w-0 max-w-full space-y-6"> */}
+<div className="flex-1 min-w-0 max-w-full space-y-6 courses-content-wrapper">
       {/* Active Filters Bar */}
-      {Object.values(selectedFilters).some((filter) => filter !== "") && (
-        <div className="bg-transparent border border-gray-200 rounded-xl p-2 mb-2 shadow-sm">
-          {/* ... active filters code ... */}
-        </div>
-      )}
+    {/* ✅ Active Filters Display */}
+{Object.values(selectedFilters).some((filter) => filter !== "") && (
+  <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 shadow-sm">
+    <div className="flex items-center justify-between mb-3">
+      <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+        <Filter className="w-4 h-4 text-blue-600" />
+        Active Filters
+      </h3>
+      <button
+        onClick={handleReset}
+        className="text-sm text-red-600 hover:text-red-700 font-semibold hover:underline"
+      >
+        Clear All
+      </button>
+    </div>
+    
+    <div className="flex flex-wrap gap-2">
+      {Object.entries(selectedFilters).map(([key, value]) => {
+        if (!value) return null;
+        
+        const displayName = value.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const filterLabel = key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+        
+        return (
+          <div
+            key={key}
+            className="flex items-center gap-2 bg-blue-50 border-2 border-blue-200 rounded-lg px-3 py-1.5 text-sm"
+          >
+            <span className="font-semibold text-gray-700">{filterLabel}:</span>
+            <span className="text-blue-700">{displayName}</span>
+            <button
+              onClick={() => handleFilterChange(key, value)}
+              className="text-gray-500 hover:text-red-600 transition-colors ml-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
 
       {/* Course Cards */}
       {/* Course Cards with Grid/List Toggle */}
 {loading ? (
-  <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "space-y-4"}>
+  // <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "space-y-4"}>
+<div className={`${viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "space-y-4"} courses-grid-wrapper ${comparisonCourses.length > 0 ? 'with-compare' : ''}`}>
     {[...Array(5)].map((_, i) => <CourseCardSkeleton key={i} />)}
   </div>
 ) : (
-  <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "space-y-4"}>
+  // <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "space-y-4"}>
+<div className={`${viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "space-y-4"} courses-grid-wrapper ${comparisonCourses.length > 0 ? 'with-compare' : ''}`}>
     {coursesData.map((course, i) => (
       <div 
         key={i} 
@@ -863,27 +1196,28 @@ const handleCompare = () => {
       >
         <div className="p-5">
           {/* University Header */}
-          <div className={`flex ${viewMode === 'grid' ? 'flex-col' : 'items-start justify-between'} gap-3 mb-4`}>
+          {/* <div className={`flex ${viewMode === 'grid' ? 'flex-col' : 'items-start justify-between'} gap-3 mb-4`}> */}
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-3 mb-4">
             <div className={`flex gap-4 ${viewMode === 'grid' ? 'w-full' : 'flex-1'}`}>
               {/* Logo */}
               <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-200 shadow-sm overflow-hidden">
                 <img 
-                  src={`https://www.educationmalaysia.in/${course.university?.logo_path}`}
+                  src={`https://www.educationmalaysia.in/storage/${course.university?.logo_path}`}
                   alt={course.university?.name} 
                   className="w-full h-full object-contain p-2" 
                 />
               </div>
 
               {/* University Info */}
-              <div className="flex-1 min-w-0">
-              <h3 
-  onClick={() => handleUniversityClick(course.university?.name)}
-  className="text-lg font-bold text-gray-900 mb-1 hover:text-blue-600 cursor-pointer transition-colors line-clamp-1"
->
+  <div className="flex-1 min-w-0">
+  <h3 
+    onClick={() => handleUniversityClick(course.university?.name)}
+    className="text-base sm:text-lg font-bold text-gray-900 mb-1 hover:text-blue-600 cursor-pointer transition-colors line-clamp-1"
+  >
   {course.university?.name}
 </h3>
-                <div className="flex items-center text-gray-600 text-sm mb-2">
-                  <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                <div className="flex items-center text-gray-600 text-xs sm:text-sm mb-2">
+    <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
                   <span className="line-clamp-1">{`${course.university?.city}, ${course.university?.state}`}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
@@ -904,11 +1238,23 @@ const handleCompare = () => {
             </div>
 
             {/* Rating & Heart */}
-            <div className={`flex items-center gap-3 flex-shrink-0 ${viewMode === 'grid' ? 'w-full justify-between mt-2' : ''}`}>
+            {/* <div className={`flex items-center gap-3 flex-shrink-0 ${viewMode === 'grid' ? 'w-full justify-between mt-2' : ''}`}> */}
+            <div className="flex items-center gap-3 flex-wrap w-full sm:w-auto sm:flex-shrink-0">
+               <div className="flex flex-col gap-1.5 bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
+    <div className="flex items-center gap-1.5">
+      <Home className="w-4 h-4 text-blue-600" />
+      <span className="text-xs font-semibold text-gray-700">Local</span>
+    </div>
+    <div className="flex items-center gap-1.5">
+      <Globe className="w-4 h-4 text-green-600" />
+      <span className="text-xs font-semibold text-gray-700">International</span>
+    </div>
+  </div>
               <div className="flex items-center gap-1 bg-gradient-to-br from-amber-50 to-yellow-50 px-3 py-2 rounded-lg border border-amber-200 shadow-sm">
                 <span className="text-lg font-bold text-gray-900">{course.university?.rating || "N/A"}</span>
                 <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
               </div>
+
               <button className="p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-red-300">
                 <Heart className="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" />
               </button>
@@ -918,183 +1264,285 @@ const handleCompare = () => {
           {/* Course Details Section */}
           <div className="border-t border-gray-200 pt-3 mb-3">
             {/* Course Title */}
-            <h4 className="text-base font-bold text-blue-600 mb-3 hover:text-blue-700 cursor-pointer transition-colors line-clamp-2">
-              {course.course_name}
-            </h4>
+            
+            <h4 
+  onClick={() => handleUniversityClick(course.university?.name)}
+  className="text-base font-bold text-blue-600 mb-3 hover:text-blue-700 cursor-pointer transition-colors line-clamp-2"
+>
+  {course.course_name}
+</h4>
 
             
 
             {/* Course Specs Grid */}
-            <div className={`grid ${viewMode === 'grid' ? 'grid-cols-2' : 'grid-cols-4'} gap-2 mb-3`}>
+            {/* <div className={`grid ${viewMode === 'grid' ? 'grid-cols-2' : 'grid-cols-4'} gap-2 mb-3`}> */}
+            <div className={`grid grid-cols-2 md:grid-cols-4 gap-2 mb-3`}>
               <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col justify-center">
                 <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Mode</p>
                 <p className="text-sm font-bold text-gray-900 line-clamp-1">{course.study_mode || "N/A"}</p>
               </div>
+             <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col justify-center min-h-[80px]">
+  <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Duration</p>
+  <p className="text-sm font-bold text-gray-900 break-words leading-tight">{course.duration || "N/A"}</p>
+</div>
+              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col justify-center min-h-[80px]">
+    <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Intakes</p>
+    <p className="text-sm font-bold text-gray-900 break-words leading-tight">
+      {course.intake || "N/A"}
+    </p>
+  </div>
               <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col justify-center">
-                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Duration</p>
-                <p className="text-sm font-bold text-gray-900 line-clamp-1">{course.duration || "N/A"}</p>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col justify-center">
-                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Intakes</p>
-                <p className="text-sm font-bold text-gray-900 line-clamp-1">{course.intake || "N/A"}</p>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col justify-center">
-                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Fee</p>
+                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Tution Fee</p>
                 <p className="text-sm font-bold text-gray-900 line-clamp-1">{course.fee || "N/A"}</p>
               </div>
             </div>
           </div>
           {/* Accreditation Badges - ALWAYS SHOW */}
+{/* Accreditation Badges - Line ~650 ke around */}
 <div className="flex flex-wrap gap-2 mb-3">
-  <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-green-300">
+  <span className="bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-green-300 whitespace-nowrap">
     Malaysian Medical Council
   </span>
-  <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-green-300">
+  <span className="bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-green-300 whitespace-nowrap">
     MQA
   </span>
 </div>
           
+{/* Action Buttons */}
+<div className={`flex ${viewMode === 'grid' ? 'flex-col' : 'items-center'} gap-3`}>
+  {/* Apply Now Button */}
+  <button
+    onClick={() => !appliedCourses.has(course.id) && handleApplyNow(course)}
+    className={`${viewMode === 'grid' ? 'w-full' : 'flex-1'} font-bold py-2.5 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm ${
+      appliedCourses.has(course.id) 
+        ? "bg-gray-400 text-white cursor-not-allowed" 
+        : "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800"
+    }`}
+    disabled={appliedCourses.has(course.id)}
+  >
+    {appliedCourses.has(course.id) ? "Applied" : "Apply Now"}
+  </button>
 
-          {/* Action Buttons */}
-          <div className={`flex ${viewMode === 'grid' ? 'flex-col' : 'items-center'} gap-3`}>
-            <button
-              onClick={() => !appliedCourses.has(course.id) && handleApplyNow(course)}
-              className={`${viewMode === 'grid' ? 'w-full' : 'flex-1'} font-bold py-2.5 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm ${
-                appliedCourses.has(course.id) 
-                  ? "bg-gray-400 text-white cursor-not-allowed" 
-                  : "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800"
-              }`}
-              disabled={appliedCourses.has(course.id)}
-            >
-              {appliedCourses.has(course.id) ? "Applied" : "Apply Now"}
-            </button>
-            <button
-              onClick={() => handleUniversityClick(course.university?.name)}
-              className={`${viewMode === 'grid' ? 'w-full' : 'flex-1'} bg-white text-gray-800 font-bold py-2.5 px-4 rounded-lg border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md text-sm`}
-            >
-              View Details
-            </button>
-            <button
-              onClick={() => handleAddToCompare(course)}
-              className={`${viewMode === 'grid' ? 'w-full' : ''} font-bold py-2.5 px-4 rounded-lg border-2 transition-all duration-200 shadow-sm hover:shadow-md bg-white text-blue-600 border-blue-300 hover:border-blue-400 hover:bg-blue-50 text-sm`}
-            >
-              Compare
-            </button>
-          </div>
+  {/* View Details & Compare - Conditional Layout */}
+  {viewMode === 'grid' ? (
+    // Grid View: Side by Side
+    <div className="grid grid-cols-2 gap-3 w-full">
+      <button
+        onClick={() => handleViewDetails(course)}
+        className=" cursor-pointer bg-white text-gray-800 font-bold py-2.5 px-4 rounded-lg border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md text-sm"
+      >
+        View Details
+      </button>
+      <button
+        onClick={() => handleAddToCompare(course)}
+        className=" cursor-pointer font-bold py-2.5 px-4 rounded-lg border-2 transition-all duration-200 shadow-sm hover:shadow-md bg-white text-blue-600 border-blue-300 hover:border-blue-400 hover:bg-blue-50 text-sm"
+      >
+        Compare
+      </button>
+    </div>
+  ) : (
+    // List View: Original Layout (separate buttons)
+    <>
+      <button
+        onClick={() => handleViewDetails(course)}
+        className=" cursor-pointer  flex-1 bg-white text-gray-800 font-bold py-2.5 px-4 rounded-lg border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md text-sm"
+      >
+        View Details
+      </button>
+      <button
+        onClick={() => handleAddToCompare(course)}
+        className=" cursor-pointer  font-bold py-2.5 px-4 rounded-lg border-2 transition-all duration-200 shadow-sm hover:shadow-md bg-white text-blue-600 border-blue-300 hover:border-blue-400 hover:bg-blue-50 text-sm"
+      >
+        Compare
+      </button>
+    </>
+  )}
+</div>
         </div>
       </div>
     ))}
   </div>
 )}
-   
-      {/* ⬇️ YAHA ADD KARO ⬇️ */}
-      {/* Comparison Bottom Panel */}
-      {comparisonCourses.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-40">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="flex items-center gap-4 flex-1 overflow-x-auto">
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="font-bold text-gray-900">Compare Courses</span>
-                  <span className="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">
-                    {comparisonCourses.length}
-                  </span>
-                </div>
+   {comparisonCourses.length > 0 && (
+<div className="compare-bar-fixed compare-bar-active bg-white border-t-2 border-gray-200 shadow-2xl">
+  <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+    
+    {/* ========== MOBILE LAYOUT ========== */}
+    <div className="flex flex-col gap-3 sm:hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-gray-900 text-sm">Compare Courses</span>
+          <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+            {comparisonCourses.length}
+          </span>
+        </div>
+        <button
+          onClick={handleClearAll}
+          className="text-xs text-red-600 hover:text-red-700 font-semibold flex items-center gap-1"
+        >
+          <X className="w-3 h-3" />
+          Clear
+        </button>
+      </div>
 
-                <div className="flex gap-3 overflow-x-auto pb-2">
-                  {comparisonCourses.map((course) => (
-                    <div
-                      key={course.id}
-                      className="flex items-center gap-2 bg-blue-50 border-2 border-blue-200 rounded-xl px-4 py-2 flex-shrink-0"
-                    >
-                      <div className="text-sm">
-                        <p className="font-semibold text-gray-900 truncate max-w-[200px]">
-                          {course.course_name}
-                        </p>
-                        <p className="text-xs text-gray-600">{course.university?.name}</p>
-                      </div>
-                      <button
-                        onClick={() => handleRemoveFromCompare(course.id)}
-                        className="text-gray-600 hover:text-red-600 transition-colors"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <button
-                  onClick={handleClearAll}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-900 font-semibold transition-colors"
-                >
-                  Clear All
-                </button>
-                <button
-                  onClick={handleCompare}
-                  disabled={comparisonCourses.length < 2}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all shadow-md ${
-                    comparisonCourses.length >= 2
-                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-lg'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  Compare Now
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </div>
+      {/* Course Pills */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        {comparisonCourses.map((course) => (
+          <div
+            key={course.id}
+            className="flex items-center gap-2 bg-blue-50 border-2 border-blue-200 rounded-lg px-3 py-2 flex-shrink-0 min-w-[200px]"
+          >
+            <div className="text-xs flex-1 min-w-0">
+              <p className="font-semibold text-gray-900 truncate">
+                {course.course_name}
+              </p>
+              <p className="text-xs text-gray-600 truncate">{course.university?.name}</p>
             </div>
+            <button
+              onClick={() => handleRemoveFromCompare(course.id)}
+              className="text-gray-600 hover:text-red-600 transition-colors flex-shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-        </div>   
-      )}
+        ))}
+      </div>
 
-      {/* Pagination */}
-      {/* <div className="flex justify-center items-center gap-3 mt-6 flex-wrap max-w-full">
-        
-      </div> */}
-      {/* Pagination */}
-<div className="flex justify-center items-center gap-3 mt-6 flex-wrap max-w-full">
-  {paginationLinks.map((link, idx) => {
-    const isDisabled = link.url === null;
-    const isActive = !!link.active;
-
-    // Label cleanup
-    const label = link.label
-      .replace("&laquo;", "«")
-      .replace("&raquo;", "»");
-
-    // Icon check
-    let content = label;
-    if (label.includes("Previous")) {
-      content = <HiChevronLeft size={20} />;
-    } else if (label.includes("Next")) {
-      content = <HiChevronRight size={20} />;
-    }
-
-    return (
+      {/* Compare Button */}
       <button
-        key={`${label}-${idx}`}
-        onClick={() => {
-          if (!isDisabled && link.url) {
-            const url = new URL(link.url);
-            const page = url.searchParams.get('page');
-            if (page) {
-              setCurrentPage(parseInt(page, 10));
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }
-          }
-        }}
-        disabled={isDisabled}
-        className={`w-10 h-10 rounded-full flex items-center justify-center border text-sm
-          ${isActive ? "bg-blue-700 text-white" : "hover:bg-gray-100"}
-          ${isDisabled ? "bg-gray-200 text-gray-500 cursor-not-allowed" : ""}
-        `}
+        onClick={handleCompare}
+        disabled={comparisonCourses.length < 2}
+        className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-bold transition-all shadow-md text-sm ${
+          comparisonCourses.length >= 2
+            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800'
+            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+        }`}
       >
-        {content}
+        Compare Now
+        <ArrowRight className="w-4 h-4" />
       </button>
-    );
-  })}
+    </div>
+
+    {/* ========== DESKTOP LAYOUT - SAME AS MOBILE ========== */}
+    <div className="hidden sm:flex sm:flex-col gap-3">
+      {/* ✅ Row 1: Title LEFT + Clear All RIGHT */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-gray-900">Compare Courses</span>
+          <span className="bg-blue-600 text-white text-sm font-bold px-2.5 py-0.5 rounded-full">
+            {comparisonCourses.length}
+          </span>
+        </div>
+        
+        {/* ✅ Clear All - TOP RIGHT SMALL */}
+        <button
+          onClick={handleClearAll}
+          className="text-sm text-red-600 hover:text-red-700 font-semibold flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-all"
+        >
+          Clear All
+        </button>
+      </div>
+
+      {/* ✅ Row 2: Course Pills - Horizontal Scroll */}
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+        {comparisonCourses.map((course) => (
+          <div
+            key={course.id}
+            className="flex items-center gap-3 bg-blue-50 border-2 border-blue-200 rounded-xl px-4 py-2.5 flex-shrink-0"
+          >
+            <div className="text-sm">
+              <p className="font-semibold text-gray-900 truncate max-w-[220px]">
+                {course.course_name}
+              </p>
+              <p className="text-xs text-gray-600 truncate">{course.university?.name}</p>
+            </div>
+            <button
+              onClick={() => handleRemoveFromCompare(course.id)}
+              className="text-gray-600 hover:text-red-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* ✅ Row 3: Compare Button - Full Width */}
+      <button
+        onClick={handleCompare}
+        disabled={comparisonCourses.length < 2}
+        className={`w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-bold transition-all shadow-md ${
+          comparisonCourses.length >= 2
+            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-lg'
+            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+        }`}
+      >
+        Compare Now
+        <ArrowRight className="w-5 h-5" />
+      </button>
+    </div>
+
+  </div>
+</div>
+)}
+    
+        
+ {/* ✅ MOBILE RESPONSIVE Pagination */}
+<div className="flex justify-center items-center gap-2 mt-6 px-4 overflow-x-auto pb-2 scrollbar-hide">
+  <div className="flex items-center gap-2 min-w-max">
+    {paginationLinks.map((link, idx) => {
+      const isDisabled = link.url === null;
+      const isActive = !!link.active;
+
+      // Label cleanup
+      const label = link.label
+        .replace("&laquo;", "«")
+        .replace("&raquo;", "»");
+
+      // ✅ MOBILE PE SIRF IMPORTANT PAGES DIKHAO
+      const pageNumber = parseInt(label);
+      const showOnMobile = 
+        label.includes("Previous") || 
+        label.includes("Next") ||
+        label === "..." ||
+        isActive || // Current page
+        pageNumber === 1 || // First page
+        pageNumber === lastPage || // Last page
+        Math.abs(pageNumber - currentPage) <= 1; // Adjacent pages
+
+      // Icon check
+      let content = label;
+      if (label.includes("Previous")) {
+        content = <HiChevronLeft size={20} />;
+      } else if (label.includes("Next")) {
+        content = <HiChevronRight size={20} />;
+      }
+
+      return (
+        <button
+          key={`${label}-${idx}`}
+       onClick={() => {
+  if (!isDisabled && link.url) {
+    const url = new URL(link.url);
+    const page = url.searchParams.get('page');
+    if (page) {
+      setCurrentPage(parseInt(page, 10));
+    }
+  }
+}}
+          disabled={isDisabled}
+          className={`
+            min-w-[40px] h-10 rounded-full flex items-center justify-center border text-sm font-semibold transition-all duration-200
+            ${isActive ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:border-gray-400"}
+            ${isDisabled ? "bg-gray-200 text-gray-400 cursor-not-allowed border-gray-200" : "cursor-pointer"}
+            ${!showOnMobile ? "hidden sm:flex" : "flex"}
+          `}
+        >
+          {content}
+        </button>
+      );
+    })}
+  </div>
 </div>
     </div>
   </div>
@@ -1102,31 +1550,32 @@ const handleCompare = () => {
 </div> 
 </div>
 
-      {showComparisonModal && (
+     {showComparisonModal && (
   <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto my-auto relative">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-4 rounded-t-2xl flex justify-between items-center sticky top-0 z-10">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[85vh] overflow-y-auto my-auto relative">
+      {/* Header - NOT STICKY */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-t-2xl flex justify-between items-center shadow-lg">
         <h2 className="text-xl font-bold">Course Comparison</h2>
         <button
           onClick={() => setShowComparisonModal(false)}
-          className="text-white hover:text-gray-200 transition-colors bg-white bg-opacity-20 rounded-lg p-2 flex-shrink-0"
+    className="text-white hover:text-gray-200  bg-opacity-30 hover:bg-opacity-40 rounded-lg p-2 flex-shrink-0"
           aria-label="Close"
         >
-          <X className="w-5 h-5" />
+          {/* <X className="w-5 h-5" /> */}
         </button>
       </div>
 
-      {/* Table Container */}
-      <div className="p-4 overflow-x-auto">
-        <table className="w-full border-collapse min-w-[700px]">
-          <thead className="sticky top-14 bg-white z-10 shadow-sm">
+      {/* Table Container with separate scroll */}
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse min-w-[900px]">
+          {/* Sticky Header */}
+          <thead className="  bg-white z-20 shadow-md">
             <tr className="bg-gray-100 border-b-2 border-gray-300">
-              <th className="text-left p-3 font-bold text-gray-900 w-36 min-w-[144px] text-sm bg-gray-100">
+              <th className="text-left p-4 font-bold text-gray-900 w-48 min-w-[192px] text-sm bg-gray-100 sticky left-0 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                 Feature
               </th>
               {comparisonCourses.map((course) => (
-                <th key={course.id} className="p-3 text-left min-w-[260px]">
+                <th key={course.id} className="p-4 text-left min-w-[320px] bg-gray-100">
                   <h3 className="font-bold text-gray-900 mb-1 text-sm leading-tight line-clamp-2">
                     {course.course_name}
                   </h3>
@@ -1137,17 +1586,18 @@ const handleCompare = () => {
               ))}
             </tr>
           </thead>
+
           <tbody>
             {/* Rating Row */}
             <tr className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+              <td className="p-4 font-semibold text-gray-700 bg-gray-50 text-sm ">
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-amber-500 flex-shrink-0" />
                   <span>Rating</span>
                 </div>
               </td>
               {comparisonCourses.map((course) => (
-                <td key={course.id} className="p-3">
+                <td key={course.id} className="p-4 bg-white">
                   <div className="flex items-center gap-1">
                     <span className="text-base font-bold text-gray-900">
                       {course.university?.rating || "N/A"}
@@ -1160,14 +1610,14 @@ const handleCompare = () => {
 
             {/* Duration Row */}
             <tr className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+              <td className="p-4 font-semibold text-gray-700 bg-gray-50 text-sm ">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-blue-600 flex-shrink-0" />
                   <span>Duration</span>
                 </div>
               </td>
               {comparisonCourses.map((course) => (
-                <td key={course.id} className="p-3 font-medium text-gray-900 text-sm">
+                <td key={course.id} className="p-4 font-medium text-gray-900 text-sm bg-white">
                   {course.duration || "N/A"}
                 </td>
               ))}
@@ -1175,14 +1625,14 @@ const handleCompare = () => {
 
             {/* Fee Row */}
             <tr className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+              <td className="p-4 font-semibold text-gray-700 bg-gray-50 text-sm ">
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-green-600 flex-shrink-0" />
                   <span>Fee</span>
                 </div>
               </td>
               {comparisonCourses.map((course) => (
-                <td key={course.id} className="p-3 font-medium text-gray-900 text-sm">
+                <td key={course.id} className="p-4 font-medium text-gray-900 text-sm bg-white">
                   {course.fee || "N/A"}
                 </td>
               ))}
@@ -1190,14 +1640,14 @@ const handleCompare = () => {
 
             {/* Intake Row */}
             <tr className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+              <td className="p-4 font-semibold text-gray-700 bg-gray-50 text-sm ">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
                   <span>Intake</span>
                 </div>
               </td>
               {comparisonCourses.map((course) => (
-                <td key={course.id} className="p-3 font-medium text-gray-900 text-sm">
+                <td key={course.id} className="p-4 font-medium text-gray-900 text-sm bg-white">
                   {course.intake || "N/A"}
                 </td>
               ))}
@@ -1205,11 +1655,14 @@ const handleCompare = () => {
 
             {/* Study Mode Row */}
             <tr className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
-                Study Mode
+              <td className="p-4 font-semibold text-gray-700 bg-gray-50 text-sm ">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-purple-600 flex-shrink-0" />
+                  <span>Study Mode</span>
+                </div>
               </td>
               {comparisonCourses.map((course) => (
-                <td key={course.id} className="p-3 font-medium text-gray-900 text-sm">
+                <td key={course.id} className="p-4 font-medium text-gray-900 text-sm bg-white">
                   {course.study_mode || "N/A"}
                 </td>
               ))}
@@ -1217,14 +1670,14 @@ const handleCompare = () => {
 
             {/* Location Row */}
             <tr className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+              <td className="p-4 font-semibold text-gray-700 bg-gray-50 text-sm ">
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-red-600 flex-shrink-0" />
                   <span>Location</span>
                 </div>
               </td>
               {comparisonCourses.map((course) => (
-                <td key={course.id} className="p-3 text-gray-700 text-sm">
+                <td key={course.id} className="p-4 text-gray-700 text-sm bg-white">
                   {`${course.university?.city}, ${course.university?.state}`}
                 </td>
               ))}
@@ -1232,11 +1685,14 @@ const handleCompare = () => {
 
             {/* University Type Row */}
             <tr className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
-                University Type
+              <td className="p-4 font-semibold text-gray-700 bg-gray-50 text-sm ">
+                <div className="flex items-center gap-2">
+                  <Building className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                  <span>University Type</span>
+                </div>
               </td>
               {comparisonCourses.map((course) => (
-                <td key={course.id} className="p-3 text-gray-700 text-sm">
+                <td key={course.id} className="p-4 text-gray-700 text-sm bg-white">
                   {course.university?.inst_type || "N/A"}
                 </td>
               ))}
@@ -1244,29 +1700,50 @@ const handleCompare = () => {
 
             {/* Ranking Row */}
             <tr className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-3 font-semibold text-gray-700 bg-gray-50 text-sm">
+              <td className="p-4 font-semibold text-gray-700 bg-gray-50 text-sm ">
                 <div className="flex items-center gap-2">
                   <Award className="w-4 h-4 text-purple-600 flex-shrink-0" />
                   <span>Ranking</span>
                 </div>
               </td>
               {comparisonCourses.map((course) => (
-                <td key={course.id} className="p-3 text-gray-700 text-sm">
+                <td key={course.id} className="p-4 text-gray-700 text-sm bg-white">
                   {course.university?.rank || "N/A"}
                 </td>
               ))}
             </tr>
+            {/* ✅ Accreditation Row - YE NAYA ADD KARO */}
+<tr className="border-b border-gray-200 hover:bg-gray-50">
+  <td className="p-4 font-semibold text-gray-700 bg-gray-50 text-sm">
+    <div className="flex items-center gap-2">
+      <Award className="w-4 h-4 text-green-600 flex-shrink-0" />
+      <span>Accreditation</span>
+    </div>
+  </td>
+  {comparisonCourses.map((course) => (
+    <td key={course.id} className="p-4 text-gray-700 text-sm bg-white">
+      <div className="flex flex-wrap gap-2">
+        <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-green-300 inline-block">
+          Malaysian Medical Council
+        </span>
+        <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-green-300 inline-block">
+          MQA
+        </span>
+      </div>
+    </td>
+  ))}
+</tr>
 
             {/* Actions Row */}
             <tr className="bg-gray-50">
-              <td className="p-3 font-semibold text-gray-700 text-sm">
+              <td className="p-4 font-semibold text-gray-700 text-sm ">
                 Actions
               </td>
               {comparisonCourses.map((course) => (
-                <td key={course.id} className="p-3">
+                <td key={course.id} className="p-4 bg-gray-50">
                   <button 
                     onClick={() => handleApplyNow(course)}
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-2 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg text-sm"
+                    className=" cursor-pointer  w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-2.5 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg text-sm"
                   >
                     Apply Now
                   </button>
@@ -1278,10 +1755,10 @@ const handleCompare = () => {
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200 sticky bottom-0 bg-white">
+      <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0">
         <button
           onClick={() => setShowComparisonModal(false)}
-          className="w-full px-5 py-2.5 border-2 border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition-colors text-sm"
+          className=" cursor-pointer  w-full px-5 py-2.5 border-2 border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition-colors text-sm"
         >
           Close Comparison
         </button>
@@ -1289,21 +1766,7 @@ const handleCompare = () => {
     </div>
   </div>
 )}
-{/* Application Modal */}
-{showApplicationModal && selectedCourse && (
-  <ApplicationModal
-    course={{
-      title: selectedCourse.course_name,
-      university: {
-        name: selectedCourse.university?.name || "University"
-      }
-    }}
-    onClose={() => {
-      setShowApplicationModal(false);
-      setSelectedCourse(null);
-    }}
-  />
-)}
+
 
 </>   
 

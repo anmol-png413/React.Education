@@ -71,7 +71,7 @@ useEffect(() => {
             <p className="text-gray-600 text-sm leading-relaxed mb-5">
               {item.description}
             </p>
-            <button className="mt-auto bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-2 rounded-lg transition">
+            <button className="mt-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition">
               SELECT
             </button>
           </div>

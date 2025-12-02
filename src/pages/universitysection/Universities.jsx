@@ -7,6 +7,7 @@ import { FaUniversity, FaGraduationCap, FaGlobe, FaSchool, FaCheckCircle, FaBrie
 import { Home, Layers, Loader2, Shield, Award, CheckCircle2, BookOpen, Users, FileCheck } from "lucide-react";
 import SEO from '../../components/SEO';
 
+
 // Format HTML helper function
 //// Format HTML helper function - COMPLETELY FIXED VERSION
 const formatHTML = (html) => {
@@ -20,7 +21,9 @@ const formatHTML = (html) => {
   decoded = decoded.replace(/<span[^>]*>/gi, "");
   decoded = decoded.replace(/<\/span>/gi, "");
   decoded = decoded.replace(/style="[^"]*"/gi, "");
-  decoded = decoded.replace(/&nbsp;/gi, " ");
+decoded = decoded.replace(/&nbsp;/gi, " ");
+
+//
 
   // Headings formatting
   decoded = decoded.replace(
@@ -42,113 +45,19 @@ const formatHTML = (html) => {
   // Paragraph styling
   decoded = decoded.replace(/<p>/g, '<p class="text-gray-700 leading-relaxed mb-4">');
 
-  // ============================================
-  // COMPLETELY FIXED TABLE HEADER AUTO-DETECTION
-  // ============================================
-  
-  // Remove all existing thead tags first (clean slate)
-  decoded = decoded.replace(/<thead[^>]*>[\s\S]*?<\/thead>/gi, '');
 
-  // Process each table individually
-  decoded = decoded.replace(
-    /<table([^>]*)>([\s\S]*?)<\/table>/gi,
-    (fullMatch, tableAttrs, tableContent) => {
-      
-      // Find first data row
-      const firstRowMatch = tableContent.match(/<tr[^>]*>([\s\S]*?)<\/tr>/i);
-      if (!firstRowMatch) return fullMatch;
-      
-      const firstRowContent = firstRowMatch[1];
-      
-      // Count actual TD cells in first row (ignore TH)
-      const tdMatches = firstRowContent.match(/<td[^>]*>[\s\S]*?<\/td>/gi) || [];
-      const columnCount = tdMatches.length;
-      
-      console.log('Column count:', columnCount);
-      console.log('First row:', firstRowContent.substring(0, 200));
-      
-      // Extract text content to identify table type
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = tableContent.toLowerCase();
-      const textContent = tempDiv.textContent || '';
-      
-      let headers = [];
-      
-      // Determine headers based on CONTENT + COLUMN COUNT
-      if (textContent.includes('university of malaya') || 
-          textContent.includes('usm') || 
-          textContent.includes('beach valley') ||
-          textContent.includes('minden')) {
-        // PUBLIC UNIVERSITIES TABLE
-        if (columnCount === 4) {
-          headers = ['NO.', 'UNIVERSITY LOGO', 'NAME & ADDRESS', 'YEAR OF ESTABLISHMENT'];
-        } else if (columnCount === 3) {
-          headers = ['NO.', 'UNIVERSITY LOGO', 'NAME & ADDRESS'];
-        } else {
-          headers = ['NO.', 'DETAILS', 'YEAR', 'LOCATION'];
-        }
-      } 
-      else if (textContent.includes('multimedia university') || 
-               textContent.includes('uniten') || 
-               textContent.includes('cyberjaya') ||
-               textContent.includes('unirazak')) {
-        // PRIVATE UNIVERSITIES TABLE
-        if (columnCount === 4) {
-          headers = ['NO.', 'NAME OF UNIVERSITY', 'YEAR ESTABLISHED', 'LOCATION'];
-        } else if (columnCount === 3) {
-          headers = ['NO.', 'UNIVERSITY NAME', 'DETAILS'];
-        } else {
-          headers = ['NO.', 'UNIVERSITY', 'YEAR', 'LOCATION', 'INFO'];
-        }
-      }
-      else if (textContent.includes('monash') || 
-               textContent.includes('curtin') || 
-               textContent.includes('australia') ||
-               textContent.includes('branch campus')) {
-        // FOREIGN UNIVERSITIES TABLE
-        if (columnCount === 5) {
-          headers = ['NO.', 'BRANCH CAMPUS NAME', 'YEAR ESTABLISHED', 'LOCATION IN MALAYSIA', 'COUNTRY OF ORIGIN'];
-        } else if (columnCount === 4) {
-          headers = ['NO.', 'CAMPUS NAME', 'YEAR', 'LOCATION'];
-        } else {
-          headers = ['NO.', 'UNIVERSITY', 'DETAILS'];
-        }
-      }
-      else {
-        // FALLBACK - Generic headers
-        if (columnCount === 4) {
-          headers = ['NO.', 'NAME', 'YEAR', 'LOCATION'];
-        } else if (columnCount === 3) {
-          headers = ['NO.', 'INFORMATION', 'DETAILS'];
-        } else if (columnCount === 5) {
-          headers = ['NO.', 'NAME', 'YEAR', 'LOCATION', 'COUNTRY'];
-        } else {
-          for (let i = 1; i <= columnCount; i++) {
-            headers.push(`COLUMN ${i}`);
-          }
-        }
-      }
-      
-      // Build beautiful header
-      const headerHTML = `
-        <thead style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
-          <tr style="background: transparent;">
-            ${headers.map(h => `<th style="color: white; padding: 1.25rem 1.5rem; text-align: left; font-weight: 700; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; border: none; white-space: nowrap;">${h}</th>`).join('')}
-          </tr>
-        </thead>
-      `;
-      
-      // Insert header properly
-      let newContent = tableContent;
-      if (newContent.includes('<tbody>')) {
-        newContent = newContent.replace('<tbody>', headerHTML + '<tbody>');
-      } else {
-        newContent = headerHTML + newContent;
-      }
-      
-      return `<table${tableAttrs}>${newContent}</table>`;
-    }
-  );
+  
+// Just keep backend table structure, only add wrapper styling
+decoded = decoded.replace(
+  /<table([^>]*)>/gi,
+  (match, attrs) => {
+    console.log('📊 Using backend table headers as-is');
+    return match; // Keep original table tag
+  }
+);
+
+
+// Convert first TR with header text to THEAD if needed
 
   // ============================================
   // TABLE WRAPPER & BEAUTIFUL STYLING
@@ -158,7 +67,7 @@ const formatHTML = (html) => {
     /<table(.*?)>/gi,
     `<div style="margin: 2rem 0; border-radius: 1rem; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); padding: 0.25rem;">
       <div style="overflow-x: auto;">
-        <div style="background: white; border-radius: 0.75rem; overflow: hidden;">
+        <div style="background: white; border-radius: 0rem; overflow: hidden;">
           <table style="width: 100%; border-collapse: collapse;" $1>`
   );
   
@@ -170,17 +79,17 @@ const formatHTML = (html) => {
   );
 
   // Ensure thead styling
-  decoded = decoded.replace(
-    /<thead(?![^>]*style=)/gi,
-    '<thead style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);"'
-  );
+ // Ensure thead styling
+decoded = decoded.replace(
+  /<thead(?![^>]*style=)/gi,
+  '<thead style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);"'
+);
 
-  // Ensure th styling
-  decoded = decoded.replace(
-    /<th(?![^>]*style=)/gi,
-    '<th style="color: white; padding: 1.25rem 1.5rem; text-align: left; font-weight: 700; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; border: none;"'
-  );
-
+// Ensure th styling  
+decoded = decoded.replace(
+  /<th(?![^>]*style=)/gi,
+  '<th style="color: white; padding: 1rem 1.25rem; text-align: left; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; border: none; white-space: nowrap;"'
+);
   // Table body
   decoded = decoded.replace(/<tbody[^>]*>/gi, '<tbody>');
 
@@ -220,23 +129,25 @@ const formatHTML = (html) => {
     '<td style="padding: 1.25rem 1.5rem; border: none; vertical-align: middle;"><span style="color: #2563eb; font-weight: 700; font-size: 1rem;">$1</span></td>'
   );
 
-  // Location with green pin icon
-  decoded = decoded.replace(
-    /<td style="padding: 1\.25rem 1\.5rem; color: #1f2937; font-size: 0\.95rem; border: none; vertical-align: middle;">([^<]*(?:\/[^<]*)*)<\/td>/gi,
-    (match, location) => {
-      if (location.includes('/') || /Kuala|Selangor|Johor|Penang|Melaka|Putrajaya|Cyberjaya|Pahang|Kedah|Perak|Sarawak|Sabah|Minden|Bangi|Beach Valley|Australia|Malaysia/i.test(location)) {
-        return `<td style="padding: 1.25rem 1.5rem; border: none; vertical-align: middle;">
-          <span style="display: inline-flex; align-items: center; gap: 0.5rem; color: #374151;">
-            <svg style="width: 1.1rem; height: 1.1rem; color: #10b981; flex-shrink: 0;" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-            </svg>
-            <span style="font-size: 0.95rem;">${location}</span>
-          </span>
-        </td>`;
-      }
-      return match;
+ 
+  // Location with green pin icon - UPDATE REGEX
+decoded = decoded.replace(
+  /<td style="padding: 1\.25rem 1\.5rem; color: #1f2937; font-size: 0\.95rem; border: none; vertical-align: middle;">([^<]*(?:\/[^<]*)*)<\/td>/gi,
+  (match, location) => {
+    // Check if it's a location (has / or contains city names)
+    if (location.includes('/') || /Kuala|Selangor|Johor|Penang|Melaka|Putrajaya|Cyberjaya|Pahang|Kedah|Perak|Sarawak|Sabah|Minden|Bangi|Beach Valley|Australia|Malaysia/i.test(location)) {
+      return `<td style="padding: 1.25rem 1.5rem; border: none; vertical-align: middle;">
+        <span style="display: inline-flex; align-items: center; gap: 0.5rem; color: #374151;">
+          <svg style="width: 1.1rem; height: 1.1rem; color: #10b981; flex-shrink: 0;" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+          </svg>
+          <span style="font-size: 0.95rem;">${location}</span>
+        </span>
+      </td>`;
     }
-  );
+    return match;
+  }
+);
 
   // University names (bold)
   decoded = decoded.replace(
@@ -270,6 +181,12 @@ const Universities = () => {
   const [seo, setSeo] = useState({});
   const [showAll, setShowAll] = useState(false);
 
+  const [universities, setUniversities] = useState({
+  public: [],
+  private: [],
+  foreign: []
+});
+
   const [pageContent, setPageContent] = useState({
     top: '',
     public: '',
@@ -281,6 +198,53 @@ const Universities = () => {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+//     const fetchUniversities = async () => {
+//   try {
+//     const [publicRes, privateRes, foreignRes] = await Promise.all([
+//       api.get('/universities/public'),
+//       api.get('/universities/private'),
+//       api.get('/universities/foreign')
+//     ]);
+
+//     setUniversities({
+//       public: publicRes.data.data.universities || [],
+//       private: privateRes.data.data.universities || [],
+//       foreign: foreignRes.data.data.universities || []
+//     });
+//   } catch (error) {
+//     console.error('Error fetching universities:', error);
+//   }
+// };
+const fetchUniversities = async () => {
+  try {
+    console.log('🔄 Fetching universities...');
+    
+    const [publicRes, privateRes, foreignRes] = await Promise.all([
+      api.get('/universities-by-institute-type/public-institution'),
+      api.get('/universities-by-institute-type/private-institution'),
+      api.get('/universities-by-institute-type/foreign-university')
+    ]);
+
+    console.log('✅ API Responses:', { publicRes, privateRes, foreignRes });
+
+    setUniversities({
+      public: publicRes.data.data.universities || [],
+      private: privateRes.data.data.universities || [],
+      foreign: foreignRes.data.data.universities || []
+    });
+
+    console.log('📊 Universities loaded:', {
+      public: publicRes.data.data.universities?.length || 0,
+      private: privateRes.data.data.universities?.length || 0,
+      foreign: foreignRes.data.data.universities?.length || 0
+    });
+
+  } catch (error) {
+    console.error('❌ Error fetching universities:', error);
+    console.error('❌ Error details:', error.response?.data || error.message);
+  }
+};
 
     const fetchContent = async () => {
       try {
@@ -307,7 +271,166 @@ const Universities = () => {
     };
 
     fetchContent();
+    fetchUniversities();
   }, []);
+
+  const renderUniversityTable = (data, type) => {
+  if (!data || data.length === 0) {
+    return <p className="text-center text-gray-500 py-8">No universities found.</p>;
+  }
+return (
+  <div style={{
+    margin: '2rem 0',
+    borderRadius: '1rem',
+    overflow: 'hidden',
+    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+    background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)',
+    padding: '0rem'
+  }}>
+    <div style={{ 
+      overflowX: 'auto',
+      WebkitOverflowScrolling: 'touch',
+      scrollbarWidth: 'thin',
+      scrollbarColor: '#93c5fd #e0e7ff'
+    }}>
+      <div style={{ 
+        background: 'white', 
+        borderRadius: '0rem', 
+        overflow: 'hidden',
+        minWidth: '600px'
+      }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)' }}>
+              <tr>
+                <th style={{
+                  color: 'white',
+                  padding: '1rem 1.25rem',
+                  textAlign: 'left',
+                  fontWeight: '700',
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  border: 'none',
+                  whiteSpace: 'nowrap'
+                }}>NO.</th>
+                <th style={{
+                  color: 'white',
+                  padding: '1rem 1.25rem',
+                  textAlign: 'left',
+                  fontWeight: '700',
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  border: 'none',
+                  whiteSpace: 'nowrap'
+                }}>NAME OF UNIVERSITY</th>
+                <th style={{
+                  color: 'white',
+                  padding: '1rem 1.25rem',
+                  textAlign: 'left',
+                  fontWeight: '700',
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  border: 'none',
+                  whiteSpace: 'nowrap'
+                }}>YEAR</th>
+                <th style={{
+                  color: 'white',
+                  padding: '1rem 1.25rem',
+                  textAlign: 'left',
+                  fontWeight: '700',
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  border: 'none',
+                  whiteSpace: 'nowrap'
+                }}>LOCATION</th>
+            
+             
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((uni, index) => {
+                const bgColor = index % 2 === 0 ? '#f9fafb' : '#ffffff';
+                return (
+                  <tr 
+                    key={uni.id}
+                    style={{
+                      backgroundColor: bgColor,
+                      borderBottom: '1px solid #e5e7eb',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#eff6ff'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = bgColor}
+                  >
+                    {/* Serial Number */}
+                    <td style={{ padding: '1.25rem 1.5rem', border: 'none', verticalAlign: 'middle' }}>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '2.5rem',
+                        height: '2.5rem',
+                        background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                        color: '#1e40af',
+                        borderRadius: '50%',
+                        fontWeight: '700',
+                        fontSize: '0.95rem'
+                      }}>{index + 1}</span>
+                    </td>
+                    
+                    {/* University Name */}
+                    <td style={{
+                      padding: '1.25rem 1.5rem',
+                      color: '#111827',
+                      fontWeight: '600',
+                      fontSize: '0.95rem',
+                      border: 'none',
+                      verticalAlign: 'middle'
+                    }}>
+                      {uni.name}
+                    </td>
+                    
+                    {/* Year */}
+                    <td style={{ padding: '1.25rem 1.5rem', border: 'none', verticalAlign: 'middle' }}>
+                      <span style={{
+                        color: '#2563eb',
+                        fontWeight: '700',
+                        fontSize: '1rem'
+                      }}>
+                        {uni.established_year || 'N/A'}
+                      </span>
+                    </td>
+                    
+                    {/* Location */}
+                    <td style={{ padding: '1.25rem 1.5rem', border: 'none', verticalAlign: 'middle' }}>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        color: '#374151'
+                      }}>
+                        <svg style={{ width: '1.1rem', height: '1.1rem', color: '#10b981', flexShrink: 0 }} fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                        </svg>
+                        <span style={{ fontSize: '0.95rem' }}>
+                          {uni.city && uni.state ? `${uni.city} / ${uni.state}` : uni.city || uni.state || 'N/A'}
+                        </span>
+                      </span>
+                    </td>
+                    
+                   
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
 
   const renderColoredHeading = (title) => {
     if (!title) return null;
@@ -662,18 +785,26 @@ const Universities = () => {
           </div>
         </div>
 
-        {/* Dynamic Content */}
-        <div className="max-w-6xl mx-auto mt-16 prose prose-lg">
-          {loading ? (
-            <div className="flex justify-center items-center p-10">
-              <Loader2 className="animate-spin text-blue-600" size={40} />
-            </div>
-          ) : (
-            <div className="p-4 bg-white rounded-lg shadow-md">
-              <RenderHtml htmlString={pageContent[activeTab]} />
-            </div>
-          )}
-        </div>
+{/* Dynamic Content */}
+<div className="max-w-6xl mx-auto mt-16 prose prose-lg">
+  {loading ? (
+    <div className="flex justify-center items-center p-10">
+      <Loader2 className="animate-spin text-blue-600" size={40} />
+    </div>
+  ) : (
+    <div className="p-4 bg-white rounded-lg shadow-md">
+      {/* API Generated Table ONLY */}
+      <div>
+        <h3 className="text-2xl font-bold text-gray-800 mb-6">
+          {activeTab === 'public' && 'List of Public Universities in Malaysia'}
+          {activeTab === 'private' && 'List of Private Universities in Malaysia'}
+          {activeTab === 'foreign' && 'List of Foreign Universities in Malaysia'}
+        </h3>
+        {renderUniversityTable(universities[activeTab], activeTab)}
+      </div>
+    </div>
+  )}
+</div>
 
         {/* Trending Courses */}
         <div className="max-w-6xl mx-auto mt-16">

@@ -14,37 +14,37 @@ const WhoWeAre = () => {
 
   const cardData = [
     {
-      icon: <FaUniversity className="mx-auto text-3xl text-indigo-500 mb-4" />,
+      icon: <FaUniversity className="mx-auto text-3xl text-blue-500 mb-4" />,
       title: "Establish an India Office",
       description:
         "We will guide you in setting up your India office, including legal aspects like RBI license handling."
     },
     {
-      icon: <FaCogs className="mx-auto text-3xl text-indigo-500 mb-4" />,
+      icon: <FaCogs className="mx-auto text-3xl text-blue-500 mb-4" />,
       title: "Market Research and Analysis",
       description:
         "We analyze markets and build effective strategies tailored to your institution's goals."
     },
     {
-      icon: <FaGlobeAsia className="mx-auto text-3xl text-indigo-500 mb-4" />,
+      icon: <FaGlobeAsia className="mx-auto text-3xl text-blue-500 mb-4" />,
       title: "Marketing and Branding",
       description:
         "Expand your international reach and attract global candidates through education fairs and branding."
     },
     {
-      icon: <FaCogs className="mx-auto text-3xl text-indigo-500 mb-4" />,
+      icon: <FaCogs className="mx-auto text-3xl text-blue-500 mb-4" />,
       title: "We Understand Business",
       description:
         "Our industry experience helps us understand and cater to the diverse needs of the education sector."
     },
     {
-      icon: <FaUsers className="mx-auto text-3xl text-indigo-500 mb-4" />,
+      icon: <FaUsers className="mx-auto text-3xl text-blue-500 mb-4" />,
       title: "We Are Good At What We Do",
       description:
         "A skilled and experienced team providing cost-effective marketing solutions that deliver."
     },
     {
-      icon: <FaHandshake className="mx-auto text-3xl text-indigo-500 mb-4" />,
+      icon: <FaHandshake className="mx-auto text-3xl text-blue-500 mb-4" />,
       title: "An Accomplished Team",
       description:
         "Our team works closely with clients to provide guidance and strategic planning throughout the process."
@@ -54,7 +54,7 @@ const WhoWeAre = () => {
   return (
     <div className="px-6 md:px-12 py-10 max-w-screen-xl mx-auto bg-gray-50">
       <h2 className="text-4xl font-bold text-center text-gray-800 mb-10">
-        About <span className="text-indigo-600">Education Malaysia</span>
+        About <span className="text-blue-600">Education Malaysia</span>
       </h2>
 
       {/* ABOUT SECTION */}
@@ -102,8 +102,8 @@ const WhoWeAre = () => {
             key={tab}
             className={`px-6 py-2 rounded-full text-sm font-semibold transition duration-300 flex items-center gap-2 ${
               activeTab === tab
-                ? "bg-indigo-600 text-white shadow-md"
-                : "bg-gray-200 text-gray-700 hover:bg-indigo-100"
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-gray-200 text-gray-700 hover:bg-blue-100"
             }`}
             onClick={() => setActiveTab(tab)}
           >
@@ -126,7 +126,7 @@ const WhoWeAre = () => {
         {activeTab === "universities" && (
           <>
             <h3 className="text-xl font-semibold text-gray-800 mb-2 flex items-center gap-2">
-              <FaUniversity className="text-indigo-500" /> For Universities
+              <FaUniversity className="text-blue-500" /> For Universities
             </h3>
             <ul className="list-disc list-inside text-gray-700 space-y-2">
               <li>Partnered with esteemed institutions globally.</li>
@@ -141,7 +141,7 @@ const WhoWeAre = () => {
         {activeTab === "students" && (
           <>
             <h3 className="text-xl font-semibold text-gray-800 mb-2 flex items-center gap-2">
-              <FaUserGraduate className="text-indigo-500" /> For Students
+              <FaUserGraduate className="text-blue-500" /> For Students
             </h3>
             <ul className="list-disc list-inside text-gray-700 space-y-2">
               <li>Comprehensive services from counseling to visa processing.</li>
@@ -154,7 +154,7 @@ const WhoWeAre = () => {
         {activeTab === "partners" && (
           <>
             <h3 className="text-xl font-semibold text-gray-800 mb-2 flex items-center gap-2">
-              <FaHandshake className="text-indigo-500" /> For Partners
+              <FaHandshake className="text-blue-500" /> For Partners
             </h3>
             <ul className="list-disc list-inside text-gray-700 space-y-2">
               <li>Swift, Simple and Rewarding partner services.</li>
@@ -191,7 +191,7 @@ const WhoWeAre = () => {
           ))}
         </div>
         <div className="flex justify-center">
-          <button className="bg-indigo-600 text-white px-8 py-2 rounded-full font-semibold shadow hover:bg-indigo-700 transition">
+          <button className="bg-blue-600 text-white px-8 py-2 rounded-full font-semibold shadow hover:bg-blue-700 transition">
             Why Choose Us
           </button>
         </div>

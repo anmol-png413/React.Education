@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 /* Global Scrollbar Styling */
 body {
   scrollbar-color: #1d4ed8 #f1f1f1;   /* For Firefox: thumb + track */
@@ -8,7 +7,7 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 6px;     /*  vertical scrollbar */
+  width: 6px;     /* vertical scrollbar */
   height: 6px;    /* horizontal scrollbar */
 }
 
@@ -17,7 +16,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color:#1d4ed8;   /* Blue color thumb */
+  background-color: #1d4ed8;   /* Blue color thumb */
   border-radius: 4px;
 }
 
@@ -27,4 +26,421 @@ body {
 
 .transition-all {
   transition: all 0.3s ease-in-out;
+}
+
+/* ============================================ */
+/* SWIPER SLIDER - BRIGHT WHITE NAVIGATION ARROWS */
+/* ============================================ */
+
+.swiper-button-prev,
+.swiper-button-next {
+  background: #ffffff !important;  /* Pure solid white */
+  width: 55px !important;
+  height: 55px !important;
+  border-radius: 50% !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;  /* Stronger shadow */
+  transition: all 0.3s ease !important;
+  opacity: 1 !important;  /* Force full opacity */
+  border: 2px solid rgba(255, 255, 255, 0.9) !important;  /* White border */
+}
+
+.swiper-button-prev:hover,
+.swiper-button-next:hover {
+  background: #3b82f6 !important;
+  transform: scale(1.15) !important;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.6) !important;
+}
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  font-size: 24px !important;
+  font-weight: 900 !important;  /* Extra bold */
+  color: #000000 !important;  /* Pure black arrows */
+}
+
+.swiper-button-prev:hover::after,
+.swiper-button-next:hover::after {
+  color: #ffffff !important;  /* White on hover */
+}
+
+/* Pagination Dots Styling */
+.swiper-pagination {
+  bottom: 30px !important;
+  z-index: 30 !important;
+}
+
+.swiper-pagination-bullet {
+  width: 12px !important;
+  height: 12px !important;
+  background: #ffffff !important;
+  opacity: 0.7 !important;
+  transition: all 0.3s ease !important;
+}
+
+.swiper-pagination-bullet:hover {
+  opacity: 0.9 !important;
+  transform: scale(1.2) !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #60a5fa !important;
+  opacity: 1 !important;
+  transform: scale(1.3) !important;
+}
+
+/* ============================================ */
+/* HIDE SCROLLBAR - Filter Panel */
+/* ============================================ */
+
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}
+
+/* Force table header styling */
+.prose thead {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+}
+
+.prose th {
+  color: white !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  padding: 1rem 1.5rem !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
+  background-color: #1e40af !important;
+}
+
+.prose td {
+  color: #111827 !important;
+  padding: 1rem 1.5rem !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.prose tbody tr:hover {
+  background-color: #eff6ff !important;
+}
+
+.prose td:first-child {
+  font-weight: 600;
+  background-color: #f1f5f9;
+}
+
+/* ============================================ */
+/* FIX: Only "Overview" as Heading */
+/* ============================================ */
+
+/* Target first paragraph in prose (which is Overview) */
+.prose > h2:first-of-type {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+  margin-top: 2rem !important;
+  margin-bottom: 1rem !important;
+  display: block !important;
+}
+
+/* ========================================
+   University Info Table - Left Column Black
+   ======================================== */
+
+/* Target ONLY the university info table */
+.university-info-table tbody tr td:first-child {
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+/* Make sure other columns stay gray */
+.university-info-table tbody tr td:not(:first-child) {
+    color: #1f2937;
+    font-weight: normal;
+}
+
+/* Optional: Add hover effect on rows */
+.university-info-table tbody tr:hover {
+    background-color: #f3f4f6;
+    transition: background-color 0.2s ease;
+}
+
+/* ============================================
+   LOCATION TEXT FIX - FULL DISPLAY
+   ============================================ */
+
+/* Location Container - No Wrapping */
+.location-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  overflow: visible !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+  min-width: fit-content !important;
+}
+
+/* Location Text - No Truncation */
+.location-text {
+  color: #2563eb !important;
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: none !important;
+  flex-shrink: 0 !important;
+  display: inline-block !important;
+}
+
+/* Parent Flex Container Fix */
+.flex-1 > div {
+  overflow: visible !important;
+}
+
+/* Ensure parent doesn't restrict width */
+.flex-1 {
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+html {
+  scroll-behavior: smooth;
+}
+
+/* ==================== TABLE STYLING - FINAL FIX ==================== */
+
+/* Table - Clean structure */
+.prose table {
+  background: transparent !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+  margin: 1.5rem 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* Remove ALL extra space above table */
+.prose table::before,
+.prose table::after,
+.prose thead::before,
+.prose thead::after {
+  content: none !important;
+  display: none !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Table Header Section - SOLID BLUE, NO extra space */
+.prose thead {
+  background-color: #1E40AF !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  line-height: 0 !important;
+}
+
+.prose thead tr {
+  background-color: #1E40AF !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  line-height: normal !important;
+}
+
+.prose thead tr:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+}
+
+/* Table Header Cells - Blue Background, NO gaps */
+.prose th {
+  background-color: #1E40AF !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1rem !important;
+  text-align: left !important;
+  border: none !important;
+  margin: 0 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  vertical-align: middle !important;
+}
+
+.prose th:last-child {
+  border-right: none !important;
+}
+
+.prose thead tr:first-child th {
+  padding-top: 0.75rem !important;
+  margin-top: 0 !important;
+  border-top: none !important;
+}
+
+/* Table Body - White Background */
+.prose tbody {
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.prose tbody tr {
+  background-color: white !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Table Body Cells */
+.prose tbody td {
+  background-color: white !important;
+  padding: 0.75rem 1rem !important;
+  border-right: 1px solid #E5E7EB !important;
+  color: #374151 !important;
+  vertical-align: middle !important;
+}
+
+.prose tbody td:last-child {
+  border-right: none !important;
+}
+
+/* Hover Effect */
+.prose tbody tr:hover {
+  background-color: #F9FAFB !important;
+}
+
+.prose tbody tr:hover td {
+  background-color: #F9FAFB !important;
+}
+
+/* First column bold */
+.prose tbody td:first-child {
+  font-weight: 600 !important;
+}
+
+/* Remove any container backgrounds */
+.prose div table,
+.prose section table {
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 1.5rem 0 !important;
+}
+
+/* Better scrollbar for tables */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #3b82f6 #e5e7eb;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+  height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #3b82f6;
+  border-radius: 10px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
+/* Table wrapper ko rounded karo with overflow hidden */
+table {
+  border-radius: 17px !important;
+  overflow: hidden !important;
+}
+
+table thead {
+  border-radius: 17px 17px 0 0 !important;
+}
+
+table thead tr th:first-child {
+  border-top-left-radius: 17px !important;
+}
+
+table thead tr th:last-child {
+  border-top-right-radius: 17px !important;
+}
+
+/* Categories scrollable container */
+.categories-scrollable {
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 25px; 
+}
+
+/* Custom Scrollbar Styling */
+.categories-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.categories-scrollable::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.categories-scrollable::-webkit-scrollbar-thumb {
+  background: #3b82f6;
+  border-radius: 10px;
+}
+
+.categories-scrollable::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* ========================================
+   COMPARE BAR FIX - Overlap Solution
+   ======================================== */
+
+/* Compare bar ko fixed position do */
+.compare-bar-fixed {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 50 !important;
+  background: white !important;
+}
+
+/* Course content ko padding do */
+.courses-content-wrapper {
+  padding-bottom: 50px;
+}
+
+/* Course grid ko margin do */
+.courses-grid-wrapper {
+  margin-bottom: 50px;
+}
+
+/* Jab compare bar active ho to extra space do */
+.courses-grid-wrapper.with-compare {
+  margin-bottom: 220px !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .courses-grid-wrapper.with-compare {
+    margin-bottom: 280px !important;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }

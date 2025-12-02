@@ -1,336 +1,13 @@
 
-// // // // import React, { useRef, useEffect, useState } from "react";
-// // // // import { useParams, Link } from "react-router-dom";
-// // // // import { Home, Layers, Info, Clock, DollarSign, Briefcase, Share2 } from "lucide-react";
-// // // // import { motion } from "framer-motion";
-// // // // import api from "../api";
-// // // // import GetInTouchForm from "../components/GetInTouchForm";
-// // // // import FeaturedUniversities from "../components/FeaturedUniversities";
-// // // // import TrendingCourse2 from "../components/TrandingCourse2";
-// // // // import UniversityCard from "../components/UniversityCard";
-// // // // import { Helmet } from "react-helmet";
 
-// // // // const tabIcons = {
-// // // //   "About Course": <Info size={16} />,
-// // // //   "Duration": <Clock size={16} />,
-// // // //   "Cost": <DollarSign size={16} />,
-// // // //   "Career": <Briefcase size={16} />,
-// // // //   "Branches": <Share2 size={16} />,
-// // // // };
-
-// // // // const formatHTML = (html) => {
-// // // //   if (!html) return "";
-// // // //   const textarea = document.createElement("textarea");
-// // // //   textarea.innerHTML = html;
-// // // //   let decoded = textarea.value;
-// // // //   decoded = decoded.replace(/<span[^>]*>/gi, "").replace(/<\/span>/gi, "");
-// // // //   decoded = decoded.replace(/style="[^"]*"/gi, "").replace(/&nbsp;/gi, " ");
-// // // //   decoded = decoded.replace(/(?:\r\n|\r|\n)/g, "</p><p>");
-// // // //   decoded = `<p>${decoded}</p>`.replace(/<p><\/p>/g, "");
-// // // //   return decoded;
-// // // // };
-
-// // // // const SpecializationDetail = () => {
-// // // //   const { name } = useParams();
-// // // //   const slug = name.toLowerCase();
-// // // //   const formattedName = slug.split("-").map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
-
-// // // //   const [tabs, setTabs] = useState([]);
-// // // //   const [activeTab, setActiveTab] = useState(null);
-// // // //   const [contentMap, setContentMap] = useState({});
-// // // //   const [faqs, setFaqs] = useState([]);
-// // // //   const [seo, setSeo] = useState({});
-// // // //   const sectionRefs = useRef({});
-
-// // // //   useEffect(() => {
-// // // //     const fetchData = async () => {
-// // // //       try {
-// // // //         const res = await api.get(`/specialization-detail-by-slug/${slug}`);
-// // // //         const spec = res?.data?.data?.specialization;
-// // // //         const contents = spec?.contents || [];
-// // // //         setSeo(res.data.data.seo || {});
-// // // //         const map = {};
-// // // //         const dynamicTabs = [];
-// // // //         contents.forEach((c) => {
-// // // //           if(c.tab && c.description){
-// // // //             map[c.tab] = c.description;
-// // // //             dynamicTabs.push({ name: c.tab, icon: tabIcons[c.tab] || <Info size={16}/> });
-// // // //             sectionRefs.current[c.tab] = React.createRef();
-// // // //           }
-// // // //         });
-// // // //         setContentMap(map);
-// // // //         setTabs(dynamicTabs);
-// // // //         setActiveTab(dynamicTabs[0]?.name || "");
-// // // //         setFaqs(spec?.faqs || []);
-// // // //       } catch(e){ console.error(e); }
-// // // //     };
-// // // //     fetchData();
-// // // //   }, [slug]);
-
-// // // //   const handleTabClick = (tabName) => {
-// // // //     sectionRefs.current[tabName]?.current?.scrollIntoView({ behavior:"smooth", block:"start" });
-// // // //   };
-
-// // // //   return (
-// // // //     <>
-// // // //       <Helmet>
-// // // //         <title>{seo?.meta_title}</title>
-// // // //         <meta name="description" content={seo?.meta_description} />
-// // // //         <meta name="keywords" content={seo?.meta_keyword} />
-// // // //       </Helmet>
-
-// // // //       <div className="w-full h-50 md:h-50 bg-cover bg-center relative" style={{ backgroundImage:"url('/9169143.jpg')" }}>
-// // // //         <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-blue-900/60 z-10" />
-// // // //         <div className="relative z-10 flex flex-col justify-center h-full px-6 md:px-12 py-10">
-// // // //           <h1 className="text-white text-xl md:text-3xl font-bold mb-2">
-// // // //             {formattedName} Course in Malaysia: <span className="text-yellow-300">Complete Guide</span>
-// // // //           </h1>
-// // // //         </div>
-// // // //       </div>
-
-// // // //       <section className="px-3 py-3 md:px-8 lg:px-8 max-w-7xl mx-auto">
-// // // //         <div className="mb-6 flex items-center text-sm text-gray-600 space-x-2">
-// // // //           <Link to="/" className="flex items-center gap-1 hover:underline"><Home size={18}/> Home</Link>
-// // // //           <span>/</span>
-// // // //           <Link to="/specialization" className="flex items-center gap-1 hover:underline"><Layers size={18}/> Specialization</Link>
-// // // //           <span>/</span>
-// // // //           <span className="capitalize font-medium">{formattedName}</span>
-// // // //         </div>
-
-// // // //         {/* Tabs */}
-// // // //         <div className="sticky top-0 z-30 bg-blue-50/30 backdrop-blur-sm p-3 rounded-xl shadow-sm mb-8 flex flex-wrap gap-3 w-full md:w-auto">
-// // // //           {tabs.map(({ name, icon }) => (
-// // // //             <button key={name} onClick={()=>handleTabClick(name)}
-// // // //               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border shadow-sm ${
-// // // //                 activeTab === name ? "text-blue-700 bg-white border-blue-300 ring-2 ring-blue-200" : "text-gray-700 bg-white hover:bg-blue-50 border-gray-200"
-// // // //               }`}>
-// // // //               {icon} {name}
-// // // //             </button>
-// // // //           ))}
-// // // //         </div>
-
-// // // //         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-10">
-// // // //           <div className="space-y-10">
-// // // //             {tabs.map(({ name }, idx) => (
-// // // //               <motion.div key={name} ref={sectionRefs.current[name]}
-// // // //                 className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition"
-// // // //                 initial={{ opacity:0, y:50 }} whileInView={{ opacity:1, y:0 }} viewport={{once:true}} transition={{ duration:0.6, delay: idx*0.1 }}>
-// // // //                 <h3 className="text-xl md:text-2xl font-semibold text-[#0E3C6E] border-l-4 border-blue-500 pl-3 mb-4">{name}</h3>
-// // // //                 <div dangerouslySetInnerHTML={{ __html: formatHTML(contentMap[name]) }} />
-// // // //               </motion.div>
-// // // //             ))}
-// // // //             <UniversityCard />
-// // // //             {faqs.length>0 && (
-// // // //               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition">
-// // // //                 <h3 className="text-xl md:text-2xl font-semibold text-[#0E3C6E] border-l-4 border-blue-500 pl-3 mb-4">Frequently Asked Questions (FAQs)</h3>
-// // // //                 {faqs.map((faq,i)=>(
-// // // //                   <details key={i} className="border-l-4 border-blue-500 bg-blue-50 px-4 py-3 rounded-md">
-// // // //                     <summary className="cursor-pointer font-semibold text-gray-900 text-base">{faq.question}</summary>
-// // // //                     <div className="mt-2 text-gray-800 text-sm leading-relaxed" dangerouslySetInnerHTML={{__html: formatHTML(faq.answer)}}/>
-// // // //                   </details>
-// // // //                 ))}
-// // // //               </div>
-// // // //             )}
-// // // //           </div>
-
-// // // //           <div className="space-y-1">
-// // // //             <TrendingCourse2 />
-// // // //             <GetInTouchForm />
-// // // //             <FeaturedUniversities />
-// // // //           </div>
-// // // //         </div>
-// // // //       </section>
-// // // //     </>
-// // // //   );
-// // // // };
-
-// // // // export default SpecializationDetail;
-
-
-// // // import React, { useRef, useEffect, useState } from "react";
-// // // import { useParams, Link } from "react-router-dom";
-// // // import { Home, Layers, Info, Clock, DollarSign, Briefcase, Share2, Search, Settings } from "lucide-react";
-// // // import { motion } from "framer-motion";
-// // // import api from "../api";
-// // // import GetInTouchForm from "../components/GetInTouchForm";
-// // // import FeaturedUniversities from "../components/FeaturedUniversities";
-// // // import TrendingCourse2 from "../components/TrandingCourse2";
-// // // import UniversityCard from "../components/UniversityCard";
-// // // import { Helmet } from "react-helmet";
-
-// // // const tabIcons = {
-// // //   "About Course": <Info size={16} />,
-// // //   "Duration": <Clock size={16} />,
-// // //   "Cost": <DollarSign size={16} />,
-// // //   "Career": <Briefcase size={16} />,
-// // //   "Branches": <Share2 size={16} />,
-// // // };
-
-// // // const formatHTML = (html) => {
-// // //   if (!html) return "";
-// // //   const textarea = document.createElement("textarea");
-// // //   textarea.innerHTML = html;
-// // //   let decoded = textarea.value;
-// // //   decoded = decoded.replace(/<span[^>]*>/gi, "").replace(/<\/span>/gi, "");
-// // //   decoded = decoded.replace(/style="[^"]*"/gi, "").replace(/&nbsp;/gi, " ");
-// // //   decoded = decoded.replace(/(?:\r\n|\r|\n)/g, "</p><p>");
-// // //   decoded = `<p>${decoded}</p>`.replace(/<p><\/p>/g, "");
-// // //   return decoded;
-// // // };
-
-// // // const SpecializationDetail = () => {
-// // //   const { name } = useParams();
-// // //   const slug = name.toLowerCase();
-// // //   const formattedName = slug.split("-").map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
-
-// // //   const [tabs, setTabs] = useState([]);
-// // //   const [activeTab, setActiveTab] = useState(null);
-// // //   const [contentMap, setContentMap] = useState({});
-// // //   const [faqs, setFaqs] = useState([]);
-// // //   const [seo, setSeo] = useState({});
-// // //   const [searchQuery, setSearchQuery] = useState('');
-// // //   const sectionRefs = useRef({});
-
-// // //   useEffect(() => {
-// // //     const fetchData = async () => {
-// // //       try {
-// // //         const res = await api.get(`/specialization-detail-by-slug/${slug}`);
-// // //         const spec = res?.data?.data?.specialization;
-// // //         const contents = spec?.contents || [];
-// // //         setSeo(res.data.data.seo || {});
-// // //         const map = {};
-// // //         const dynamicTabs = [];
-// // //         contents.forEach((c) => {
-// // //           if(c.tab && c.description){
-// // //             map[c.tab] = c.description;
-// // //             dynamicTabs.push({ name: c.tab, icon: tabIcons[c.tab] || <Info size={16}/> });
-// // //             sectionRefs.current[c.tab] = React.createRef();
-// // //           }
-// // //         });
-// // //         setContentMap(map);
-// // //         setTabs(dynamicTabs);
-// // //         setActiveTab(dynamicTabs[0]?.name || "");
-// // //         setFaqs(spec?.faqs || []);
-// // //       } catch(e){ console.error(e); }
-// // //     };
-// // //     fetchData();
-// // //   }, [slug]);
-
-// // //   const handleTabClick = (tabName) => {
-// // //     sectionRefs.current[tabName]?.current?.scrollIntoView({ behavior:"smooth", block:"start" });
-// // //   };
-
-// // //   const handleSearch = (value) => {
-// // //     setSearchQuery(value);
-// // //     // Add your search logic here
-// // //   };
-
-// // //   const handleFilterClick = () => {
-// // //     // Add your filter logic here
-// // //     console.log('Filter clicked');
-// // //   };
-
-// // //   return (
-// // //     <>
-// // //       <Helmet>
-// // //         <title>{seo?.meta_title}</title>
-// // //         <meta name="description" content={seo?.meta_description} />
-// // //         <meta name="keywords" content={seo?.meta_keyword} />
-// // //       </Helmet>
-
-// // //       {/* New Header */}
-// // //       <div className="w-full bg-gradient-to-r from-teal-700 via-teal-600 to-cyan-600">
-// // //         <div className="max-w-7xl mx-auto px-6 md:px-12 py-8">
-// // //           <div className="mb-8">
-// // //             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-// // //               {formattedName} Course in Malaysia
-// // //             </h1>
-// // //             <p className="text-teal-100">
-// // //               Complete Guide to <span className="font-semibold">{formattedName}</span> Programs
-// // //             </p>
-// // //           </div>
-// // //           <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
-// // //             <div className="flex-1 relative">
-// // //               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-// // //               <input
-// // //                 type="text"
-// // //                 placeholder="Search courses, universities..."
-// // //                 value={searchQuery}
-// // //                 onChange={(e) => handleSearch(e.target.value)}
-// // //                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-// // //               />
-// // //             </div>
-// // //             <button
-// // //               onClick={handleFilterClick}
-// // //               className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 whitespace-nowrap"
-// // //             >
-// // //               <Settings className="w-5 h-5" />
-// // //               <span>Filters</span>
-// // //             </button>
-// // //           </div>
-// // //         </div>
-// // //       </div>
-
-// // //       <section className="px-3 py-3 md:px-8 lg:px-8 max-w-7xl mx-auto">
-// // //         <div className="mb-6 flex items-center text-sm text-gray-600 space-x-2">
-// // //           <Link to="/" className="flex items-center gap-1 hover:underline"><Home size={18}/> Home</Link>
-// // //           <span>/</span>
-// // //           <Link to="/specialization" className="flex items-center gap-1 hover:underline"><Layers size={18}/> Specialization</Link>
-// // //           <span>/</span>
-// // //           <span className="capitalize font-medium">{formattedName}</span>
-// // //         </div>
-
-// // //         {/* Tabs */}
-// // //         <div className="sticky top-0 z-30 bg-blue-50/30 backdrop-blur-sm p-3 rounded-xl shadow-sm mb-8 flex flex-wrap gap-3 w-full md:w-auto">
-// // //           {tabs.map(({ name, icon }) => (
-// // //             <button key={name} onClick={()=>handleTabClick(name)}
-// // //               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border shadow-sm ${
-// // //                 activeTab === name ? "text-blue-700 bg-white border-blue-300 ring-2 ring-blue-200" : "text-gray-700 bg-white hover:bg-blue-50 border-gray-200"
-// // //               }`}>
-// // //               {icon} {name}
-// // //             </button>
-// // //           ))}
-// // //         </div>
-
-// // //         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-10">
-// // //           <div className="space-y-10">
-// // //             {tabs.map(({ name }, idx) => (
-// // //               <motion.div key={name} ref={sectionRefs.current[name]}
-// // //                 className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition"
-// // //                 initial={{ opacity:0, y:50 }} whileInView={{ opacity:1, y:0 }} viewport={{once:true}} transition={{ duration:0.6, delay: idx*0.1 }}>
-// // //                 <h3 className="text-xl md:text-2xl font-semibold text-[#0E3C6E] border-l-4 border-blue-500 pl-3 mb-4">{name}</h3>
-// // //                 <div dangerouslySetInnerHTML={{ __html: formatHTML(contentMap[name]) }} />
-// // //               </motion.div>
-// // //             ))}
-// // //             <UniversityCard />
-// // //             {faqs.length>0 && (
-// // //               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition">
-// // //                 <h3 className="text-xl md:text-2xl font-semibold text-[#0E3C6E] border-l-4 border-blue-500 pl-3 mb-4">Frequently Asked Questions (FAQs)</h3>
-// // //                 {faqs.map((faq,i)=>(
-// // //                   <details key={i} className="border-l-4 border-blue-500 bg-blue-50 px-4 py-3 rounded-md">
-// // //                     <summary className="cursor-pointer font-semibold text-gray-900 text-base">{faq.question}</summary>
-// // //                     <div className="mt-2 text-gray-800 text-sm leading-relaxed" dangerouslySetInnerHTML={{__html: formatHTML(faq.answer)}}/>
-// // //                   </details>
-// // //                 ))}
-// // //               </div>
-// // //             )}
-// // //           </div>
-
-// // //           <div className="space-y-1">
-// // //             <TrendingCourse2 />
-// // //             <GetInTouchForm />
-// // //             <FeaturedUniversities />
-// // //           </div>
-// // //         </div>
-// // //       </section>
-// // //     </>
-// // //   );
-// // // };
-
-// // // export default SpecializationDetail;
 // // import React, { useRef, useEffect, useState } from "react";
-// // import { useParams, Link } from "react-router-dom";
-// // import { Home, Layers, Info, Clock, DollarSign, Briefcase, Share2 } from "lucide-react";
+// // import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
+// // import { 
+// //   Home, Layers, Info, Clock, DollarSign, Briefcase, Share2, 
+// //   ArrowLeft, Star, MapPin, Users, BookOpen, CheckCircle, 
+// //   Award, TrendingUp, Building2, Target, Lightbulb, 
+// //   ChevronRight, GraduationCap, FileText, Calendar, Globe
+// // } from "lucide-react";
 // // import { motion } from "framer-motion";
 // // import api from "../api";
 // // import GetInTouchForm from "../components/GetInTouchForm";
@@ -345,480 +22,585 @@
 // //   "Cost": <DollarSign size={16} />,
 // //   "Career": <Briefcase size={16} />,
 // //   "Branches": <Share2 size={16} />,
-// // };
-
-// // const formatHTML = (html) => {
+// //   "Entry Requirement": <FileText size={16} />,
+// // };const formatHTML = (html) => {
 // //   if (!html) return "";
+  
 // //   const textarea = document.createElement("textarea");
 // //   textarea.innerHTML = html;
 // //   let decoded = textarea.value;
+  
+// //   // Clean spans and inline styles
 // //   decoded = decoded.replace(/<span[^>]*>/gi, "").replace(/<\/span>/gi, "");
 // //   decoded = decoded.replace(/style="[^"]*"/gi, "").replace(/&nbsp;/gi, " ");
-// //   decoded = decoded.replace(/(?:\r\n|\r|\n)/g, "</p><p>");
-// //   decoded = `<p>${decoded}</p>`.replace(/<p><\/p>/g, "");
+  
+// //   // 🎯 TABLE PROCESSING
+// //   decoded = decoded.replace(
+// //     /<table[^>]*>/gi, 
+// //     '<div class="overflow-x-auto my-6 rounded-xl shadow-lg"><table class="min-w-full border-collapse bg-white border border-gray-200">'
+// //   );
+// //   decoded = decoded.replace(/<\/table>/gi, '</table></div>');
+  
+// //   if (!decoded.includes('<thead')) {
+// //     decoded = decoded.replace(
+// //       /(<table[^>]*>)\s*(<tr[^>]*>)/i,
+// //       '$1<thead class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800">$2'
+// //     );
+// //     let firstTrEnd = decoded.indexOf('</tr>');
+// //     if (firstTrEnd !== -1) {
+// //       decoded = decoded.substring(0, firstTrEnd + 5) + '</thead><tbody class="divide-y divide-gray-200">' + decoded.substring(firstTrEnd + 5);
+// //     }
+// //     decoded = decoded.replace(/<\/table>/i, '</tbody></table>');
+// //   } else {
+// //     decoded = decoded.replace(/<thead[^>]*>/gi, '<thead class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800">');
+// //     decoded = decoded.replace(/<tbody[^>]*>/gi, '<tbody class="divide-y divide-gray-200">');
+// //   }
+  
+// //   decoded = decoded.replace(/<th([^>]*)>/gi, '<th$1 class="px-6 py-4 text-left text-sm font-bold text-white bg-blue-700 uppercase tracking-wider border border-white/20 whitespace-nowrap align-middle">');
+// //   decoded = decoded.replace(/<tr([^>]*)>/gi, '<tr$1 class="hover:bg-blue-50 transition-colors duration-150">');
+// //   decoded = decoded.replace(/<td([^>]*)>/gi, '<td$1 class="px-6 py-4 text-sm text-gray-900 border border-gray-200 align-middle">');
+// //   decoded = decoded.replace(/<th([^>]*)><\/th>/gi, '<th$1>&nbsp;</th>');
+// //   decoded = decoded.replace(/<td([^>]*)><\/td>/gi, '<td$1>&nbsp;</td>');
+  
+// //   // 🎯 ANCHOR/LINK STYLING - FIX LINKS
+// //   decoded = decoded.replace(/<a\s+/gi, '<a class="text-blue-600 hover:text-blue-800 underline font-medium transition-colors" ');
+  
+// //   // 🎯 LIST STYLING - FIX BULLETS & NUMBERS
+// //   decoded = decoded.replace(/<ul>/gi, '<ul class="space-y-2 my-4 pl-6">');
+// //   decoded = decoded.replace(/<ol>/gi, '<ol class="space-y-2 my-4 pl-6">');
+// //   decoded = decoded.replace(/<li>/gi, '<li class="text-gray-700 leading-relaxed relative pl-2" style="display: list-item; list-style-position: outside;">');
+  
+// //   // Apply bullet/number styles to ul/ol
+// //   decoded = decoded.replace(/<ul class="space-y-2 my-4 pl-6">/gi, '<ul class="space-y-2 my-4 pl-6" style="list-style-type: disc;">');
+// //   decoded = decoded.replace(/<ol class="space-y-2 my-4 pl-6">/gi, '<ol class="space-y-2 my-4 pl-6" style="list-style-type: decimal;">');
+  
+
+// // // Common heading keywords
+// // decoded = decoded.replace(/^(Career Opportunities?|Key Features?|Admission Process|Entry Requirements?|Top Universities|Specializations?|Application|Coverage|Eligibility|Support|Description|Availability|Examples|Duration|Overview|Aerodynamics Engineering|Propulsion Systems Engineering|Aerospace Structures Engineering|Aeronautical Engineering|Aircraft Engineering):?\s*$/gim, '<h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4 block" style="display: block !important;">$1</h3>');
+
+// // // Convert bold standalone lines to headings
+// // decoded = decoded.replace(/<p[^>]*>\s*<strong>([A-Z][^<]+)<\/strong>\s*<\/p>/gi, '<h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4 block" style="display: block !important;">$1</h3>');
+  
+// //   // 🎯 PARAGRAPH STYLING
+// //   decoded = decoded.replace(/<p>/gi, '<p class="mb-4 text-gray-700 leading-relaxed">');
+  
+// //   // Clean up
+// //   decoded = decoded.replace(/\n{3,}/g, '\n\n');
+// //   decoded = decoded.replace(/<p[^>]*>\s*<\/p>/g, '');
+  
 // //   return decoded;
 // // };
 
-// // const SpecializationDetail = () => {
-// //   const { name } = useParams();
-// //   const slug = name.toLowerCase();
-// //   const formattedName = slug.split("-").map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
 
+// // const detectCategoryFromSlug = (slug, name) => {
+// //   const lowerSlug = slug?.toLowerCase() || '';
+// //   const lowerName = name?.toLowerCase() || '';
+  
+// //   if (lowerSlug.includes('engineer') || lowerName.includes('engineer')) return 'Engineering';
+// //   if (lowerSlug.includes('computer') || lowerSlug.includes('software') || lowerSlug.includes('it') || lowerSlug.includes('technology') || lowerSlug.includes('cyber') || lowerSlug.includes('data') || lowerName.includes('computer') || lowerName.includes('software')) return 'Technology & IT';
+// //   if (lowerSlug.includes('medic') || lowerSlug.includes('health') || lowerSlug.includes('nurs') || lowerSlug.includes('pharmac') || lowerSlug.includes('dent') || lowerName.includes('medical')) return 'Medical & Health';
+// //   if (lowerSlug.includes('business') || lowerSlug.includes('management') || lowerSlug.includes('accounting') || lowerSlug.includes('finance') || lowerSlug.includes('marketing') || lowerSlug.includes('entrepreneur') || lowerSlug.includes('banking') || lowerSlug.includes('human-resource') || lowerSlug.includes('hrm') || lowerSlug.includes('supply-chain') || lowerName.includes('business') || lowerName.includes('accounting')) return 'Business & Management';
+// //   if (lowerSlug.includes('science') || lowerSlug.includes('biology') || lowerSlug.includes('chemistry') || lowerSlug.includes('physics') || lowerSlug.includes('biotechnology') || lowerSlug.includes('agriculture') || lowerSlug.includes('actuarial') || lowerName.includes('science')) return 'Science';
+// //   if (lowerSlug.includes('art') || lowerSlug.includes('design') || lowerSlug.includes('graphic') || lowerSlug.includes('fashion') || lowerSlug.includes('interior') || lowerSlug.includes('architecture') || lowerName.includes('design') || lowerName.includes('art')) return 'Arts & Design';
+// //   if (lowerSlug.includes('social') || lowerSlug.includes('psychology') || lowerSlug.includes('sociology') || lowerSlug.includes('education') || lowerSlug.includes('law') || lowerSlug.includes('political') || lowerName.includes('social') || lowerName.includes('law')) return 'Social Sciences';
+// //   if (lowerSlug.includes('math') || lowerSlug.includes('statistic') || lowerName.includes('math') || lowerName.includes('statistic')) return 'Mathematics';
+  
+// //   return 'General';
+// // };
+
+// // const getCategoryImage = (category) => {
+// //   const categoryImages = {
+// //     'Engineering': 'https://images.pexels.com/photos/159306/construction-site-build-construction-work-159306.jpeg?auto=compress&cs=tinysrgb&w=1200',
+// //     'Technology & IT': 'https://images.pexels.com/photos/546819/pexels-photo-546819.jpeg?auto=compress&cs=tinysrgb&w=1200',
+// //     'Medical & Health': 'https://images.pexels.com/photos/356054/pexels-photo-356054.jpeg?auto=compress&cs=tinysrgb&w=1200',
+// //     'Business & Management': 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1200',
+// //     'Science': 'https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg?auto=compress&cs=tinysrgb&w=1200',
+// //     'Arts & Design': 'https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=1200',
+// //     'Social Sciences': 'https://images.pexels.com/photos/4101143/pexels-photo-4101143.jpeg?auto=compress&cs=tinysrgb&w=1200',
+// //     'Mathematics': 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=800',
+// //     'General': 'https://images.pexels.com/photos/380768/pexels-photo-380768.jpeg?auto=compress&cs=tinysrgb&w=800'
+// //   };
+  
+// //   return categoryImages[category] || categoryImages['General'];
+// // };
+
+// // const SpecializationDetail = () => {
+// //  const { name, level, nameWithLevel } = useParams();
+
+// // // Extract name and level from combined slug
+// // let slug, selectedLevelFromUrl;
+
+// // if (nameWithLevel) {
+// //   // New format: accounting-diploma
+// //   const parts = nameWithLevel.split('-');
+// //   const lastPart = parts[parts.length - 1];
+  
+// //   // Check if last part is a valid level
+// //   const validLevels = ['diploma', 'undergraduate', 'postgraduate', 'phd', 'certificate'];
+  
+// //   if (validLevels.includes(lastPart)) {
+// //     selectedLevelFromUrl = lastPart;
+// //     slug = parts.slice(0, -1).join('-'); // accounting
+// //   } else {
+// //     slug = nameWithLevel; // No level specified
+// //     selectedLevelFromUrl = null;
+// //   }
+// // } else {
+// //   // Old format fallback: name/level
+// //   slug = name?.toLowerCase();
+// //   selectedLevelFromUrl = level;
+// // }
+
+// // const formattedName = slug ? slug.split("-").map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(" ") : "Course";
+
+// //   const thumbnailFromState = location.state?.thumbnail;
+
+// //   const [selectedLevel, setSelectedLevel] = useState(selectedLevelFromUrl || 'undergraduate');
 // //   const [tabs, setTabs] = useState([]);
 // //   const [activeTab, setActiveTab] = useState(null);
 // //   const [contentMap, setContentMap] = useState({});
 // //   const [faqs, setFaqs] = useState([]);
 // //   const [seo, setSeo] = useState({});
+// //   const [categoryData, setCategoryData] = useState(null);
+// //   const [relatedUniversities, setRelatedUniversities] = useState([]);
+// //   const [loading, setLoading] = useState(true);
+// //   const [error, setError] = useState(null);
+// //   const [educationLevels, setEducationLevels] = useState({});
 // //   const sectionRefs = useRef({});
+// // useEffect(() => {
+// //   const fetchData = async () => {
+// //     if (!slug) {
+// //       setError("Invalid URL - No course name provided");
+// //       setLoading(false);
+// //       return;
+// //     }
 
-// //   useEffect(() => {
-// //     const fetchData = async () => {
-// //       try {
-// //         const res = await api.get(`/specialization-detail-by-slug/${slug}`);
-// //         const spec = res?.data?.data?.specialization;
-// //         const contents = spec?.contents || [];
-// //         setSeo(res.data.data.seo || {});
-// //         const map = {};
-// //         const dynamicTabs = [];
-// //         contents.forEach((c) => {
-// //           if(c.tab && c.description){
-// //             map[c.tab] = c.description;
-// //             dynamicTabs.push({ name: c.tab, icon: tabIcons[c.tab] || <Info size={16}/> });
-// //             sectionRefs.current[c.tab] = React.createRef();
-// //           }
-// //         });
-// //         setContentMap(map);
-// //         setTabs(dynamicTabs);
-// //         setActiveTab(dynamicTabs[0]?.name || "");
-// //         setFaqs(spec?.faqs || []);
-// //       } catch(e){ console.error(e); }
-// //     };
-// //     fetchData();
-// //   }, [slug]);
+// //     try {
+// //       setLoading(true);
+      
+// //       const res = await api.get(`/specialization-detail-by-slug/${slug}`);
+      
+// //       // ✅ CORRECT FIX: Handle actual API response structure
+// //       const category = res?.data?.data?.specialization || res?.data?.specialization || res?.data?.category || res?.data;
+      
+// //       if (!category || !category.name) {
+// //         throw new Error("Course not found. This specialization may not exist or the slug might be incorrect.");
+// //       }
+      
+// //       const contents = category?.contents || [];
+      
+// //       setCategoryData(category);
+// //       setSeo(res.data?.seo || res.data?.data?.seo || category?.seo || {});
+// //       setRelatedUniversities(res.data?.related_universities || res.data?.data?.related_universities || category?.related_universities || []);
+      
+// //       setEducationLevels({
+// //         diploma: { title: 'Diploma', duration: '2.5 Years', fees: 'RM 18,000/year', intake: 'January, April, August', accreditation: 'MQA Approved' },
+// //         undergraduate: { title: 'Undergraduate', duration: '4 Years', fees: 'RM 35,000/year', intake: 'February, July, September', accreditation: 'EAC Accredited' },
+// //         postgraduate: { title: 'Postgraduate', duration: '1.5-2 Years', fees: 'RM 42,000/year', intake: 'February, September', accreditation: 'MQA Accredited' },
+// //         phd: { title: 'PhD', duration: '3-4 Years', fees: 'RM 38,000/year', intake: 'Throughout the year', accreditation: 'MQA Accredited' },
+// //         certificate: { title: 'Certificates', duration: '3-6 Months', fees: 'RM 5,000-12,000', intake: 'Multiple intakes', accreditation: 'Professional Bodies' }
+// //       });
+      
+// //       const map = {};
+// //       const dynamicTabs = [];
+// //       contents.forEach((c) => {
+// //         if(c.tab && c.description){
+// //           map[c.tab] = c.description;
+// //           dynamicTabs.push({ 
+// //             name: c.tab, 
+// //             icon: tabIcons[c.tab] || <Info size={16}/> 
+// //           });
+// //           sectionRefs.current[c.tab] = React.createRef();
+// //         }
+// //       });
+      
+// //       setContentMap(map);
+// //       setTabs(dynamicTabs);
+// //       setActiveTab(dynamicTabs[0]?.name || "");
+// //       setFaqs(category?.faqs || res.data?.faqs || []);
+// //       setLoading(false);
+// //     } catch(e) { 
+// //       let errorMessage = "Failed to load course data";
+      
+// //       if (e.response?.status === 404) {
+// //         errorMessage = `Course "${formattedName}" not found. Please check if this specialization exists in the system.`;
+// //       } else if (e.response?.data?.message) {
+// //         errorMessage = e.response.data.message;
+// //       } else if (e.message) {
+// //         errorMessage = e.message;
+// //       }
+      
+// //       setError(errorMessage);
+// //       setLoading(false);
+// //     }
+// //   };
+  
+// //   fetchData();
+// // }, [slug, formattedName]);
+// // useEffect(() => {
+// //   if (selectedLevelFromUrl && educationLevels[selectedLevelFromUrl]) {
+// //     setSelectedLevel(selectedLevelFromUrl);
+// //   } else if (!selectedLevelFromUrl) {
+// //     setSelectedLevel('undergraduate');
+// //   }
+// // }, [selectedLevelFromUrl, educationLevels]);
 
 // //   const handleTabClick = (tabName) => {
-// //     sectionRefs.current[tabName]?.current?.scrollIntoView({ behavior:"smooth", block:"start" });
+// //     setActiveTab(tabName);
+// //     sectionRefs.current[tabName]?.current?.scrollIntoView({ 
+// //       behavior:"smooth", 
+// //       block:"start"
+// //     });
 // //   };
 
-// //   return (
-// //     <>
-// //       <Helmet>
-// //         <title>{seo?.meta_title}</title>
-// //         <meta name="description" content={seo?.meta_description} />
-// //         <meta name="keywords" content={seo?.meta_keyword} />
-// //       </Helmet>
+// //   if (loading) {
+// //     return (
+// //       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+// //         <div className="text-center">
+// //           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto"></div>
+// //           <p className="mt-4 text-gray-600 font-medium">Loading {formattedName}...</p>
+// //           <p className="mt-2 text-sm text-gray-500">Fetching course details</p>
+// //         </div>
+// //       </div>
+// //     );
+// //   }
 
-// //       {/* New Header */}
-// //       <div className="w-full bg-gradient-to-r from-teal-700 via-teal-600 to-cyan-600">
-// //         <div className="max-w-7xl mx-auto px-6 md:px-12 py-16">
-// //           <div className="text-center">
-// //             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-// //               {formattedName} Course in Malaysia
-// //             </h1>
-// //             <p className="text-teal-100">
-// //               Complete Guide to <span className="font-semibold">{formattedName}</span> Programs
+// //   if (error) {
+// //     return (
+// //       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+// //         <div className="text-center max-w-md mx-auto px-4">
+// //           <div className="bg-red-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+// //             <BookOpen className="w-10 h-10 text-red-600" />
+// //           </div>
+// //           <h2 className="text-2xl font-bold text-gray-900 mb-2">Course Not Found</h2>
+// //           <p className="text-gray-600 mb-2">{error}</p>
+// //           <div className="bg-gray-100 rounded-lg p-4 mb-6">
+// //             <p className="text-sm text-gray-700 mb-2">
+// //               <strong>Requested:</strong> {formattedName}
+// //             </p>
+// //             <p className="text-sm text-gray-700">
+// //               <strong>Slug:</strong> {slug}
+// //             </p>
+// //           </div>
+// //           <div className="space-y-3">
+// //             <Link 
+// //               to="/specialization" 
+// //               className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+// //             >
+// //               <ArrowLeft className="w-5 h-5" />
+// //               Back to Specializations
+// //             </Link>
+// //             <p className="text-sm text-gray-500">
+// //               Check the browser console (F12) for detailed error information
 // //             </p>
 // //           </div>
 // //         </div>
 // //       </div>
+// //     );
+// //   }
 
-// //       <section className="px-3 py-3 md:px-8 lg:px-8 max-w-7xl mx-auto">
-// //         <div className="mb-6 flex items-center text-sm text-gray-600 space-x-2">
-// //           <Link to="/" className="flex items-center gap-1 hover:underline"><Home size={18}/> Home</Link>
-// //           <span>/</span>
-// //           <Link to="/specialization" className="flex items-center gap-1 hover:underline"><Layers size={18}/> Specialization</Link>
-// //           <span>/</span>
-// //           <span className="capitalize font-medium">{formattedName}</span>
+// //   if (!categoryData) {
+// //     return null;
+// //   }
+
+// //   const currentLevel = educationLevels[selectedLevel] || {};
+// //   const detectedCategory = detectCategoryFromSlug(slug, categoryData.name);
+  
+// //   let heroImage = null;
+  
+// //   if (thumbnailFromState) {
+// //     heroImage = `https://www.educationmalaysia.in/storage/${thumbnailFromState}`;
+// //   }
+// //   else if (seo?.og_image_path) {
+// //     heroImage = `https://www.educationmalaysia.in/storage/${seo.og_image_path}`;
+// //   }
+// //   else if (categoryData?.thumbnail_path) {
+// //     heroImage = `https://www.educationmalaysia.in/storage/${categoryData.thumbnail_path}`;
+// //   }
+// //   else if (categoryData?.image_path) {
+// //     heroImage = `https://www.educationmalaysia.in/storage/${categoryData.image_path}`;
+// //   }
+// //   else if (categoryData?.contents && categoryData.contents.length > 0) {
+// //     const contentWithImage = categoryData.contents.find(c => c.image_path && c.image_path.trim() !== '');
+// //     if (contentWithImage) {
+// //       heroImage = `https://www.educationmalaysia.in/storage/${contentWithImage.image_path}`;
+// //     }
+// //   }
+  
+// //   if (!heroImage) {
+// //     heroImage = getCategoryImage(detectedCategory);
+// //   }
+
+// //   return (
+// //     <>
+// //       <Helmet>
+// //         <title>{seo?.meta_title || `${categoryData.name} ${currentLevel.title || ''} Course in Malaysia`}</title>
+// //         <meta name="description" content={seo?.meta_description || `Complete guide to ${categoryData.name} ${currentLevel.title || ''} programs in Malaysia`} />
+// //         <meta name="keywords" content={seo?.meta_keyword || categoryData.name} />
+// // <link rel="canonical" href={`https://educationmalaysia.in/specialization/${slug}${selectedLevel ? `-${selectedLevel}` : ''}`} />
+// //       </Helmet>
+
+// //       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+// //         <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-cyan-600 text-white">
+// //           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+// //             <Link to="/specialization" className="inline-flex items-center gap-2 text-blue-100 hover:text-white transition-colors mb-6">
+// //               <ArrowLeft className="w-5 h-5" />
+// //               Back to All Specializations
+// //             </Link>
+// //           </div>
 // //         </div>
 
-// //         {/* Tabs */}
-// //         <div className="sticky top-0 z-30 bg-blue-50/30 backdrop-blur-sm p-3 rounded-xl shadow-sm mb-8 flex flex-wrap gap-3 w-full md:w-auto">
-// //           {tabs.map(({ name, icon }) => (
-// //             <button key={name} onClick={()=>handleTabClick(name)}
-// //               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border shadow-sm ${
-// //                 activeTab === name ? "text-blue-700 bg-white border-blue-300 ring-2 ring-blue-200" : "text-gray-700 bg-white hover:bg-blue-50 border-gray-200"
-// //               }`}>
-// //               {icon} {name}
-// //             </button>
-// //           ))}
-// //         </div>
-
-// //         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-10">
-// //           <div className="space-y-10">
-// //             {tabs.map(({ name }, idx) => (
-// //               <motion.div key={name} ref={sectionRefs.current[name]}
-// //                 className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition"
-// //                 initial={{ opacity:0, y:50 }} whileInView={{ opacity:1, y:0 }} viewport={{once:true}} transition={{ duration:0.6, delay: idx*0.1 }}>
-// //                 <h3 className="text-xl md:text-2xl font-semibold text-[#0E3C6E] border-l-4 border-blue-500 pl-3 mb-4">{name}</h3>
-// //                 <div dangerouslySetInnerHTML={{ __html: formatHTML(contentMap[name]) }} />
-// //               </motion.div>
-// //             ))}
-// //             <UniversityCard />
-// //             {faqs.length>0 && (
-// //               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition">
-// //                 <h3 className="text-xl md:text-2xl font-semibold text-[#0E3C6E] border-l-4 border-blue-500 pl-3 mb-4">Frequently Asked Questions (FAQs)</h3>
-// //                 {faqs.map((faq,i)=>(
-// //                   <details key={i} className="border-l-4 border-blue-500 bg-blue-50 px-4 py-3 rounded-md">
-// //                     <summary className="cursor-pointer font-semibold text-gray-900 text-base">{faq.question}</summary>
-// //                     <div className="mt-2 text-gray-800 text-sm leading-relaxed" dangerouslySetInnerHTML={{__html: formatHTML(faq.answer)}}/>
-// //                   </details>
-// //                 ))}
+// //         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-16">
+// //           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            
+// //             <div className="relative h-96">
+// //               <img
+// //                 src={heroImage}
+// //                 alt={categoryData.name}
+// //                 className="w-full h-full object-cover"
+// //                 onError={(e) => {
+// //                   e.target.src = getCategoryImage('General');
+// //                 }}
+// //               />
+// //               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+// //               <div className="absolute bottom-0 left-0 right-0 p-8">
+// //                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+// //                   {categoryData.name}
+// //                 </h1>
+// //                 <div className="flex flex-wrap gap-4 text-white/90">
+// //                   <div className="flex items-center gap-2">
+// //                     <GraduationCap className="w-5 h-5" />
+// //                     <span className="font-medium">Study in Malaysia</span>
+// //                   </div>
+// //                   <div className="flex items-center gap-2">
+// //                     <MapPin className="w-5 h-5" />
+// //                     <span>Top Malaysian Universities</span>
+// //                   </div>
+// //                 </div>
 // //               </div>
-// //             )}
-// //           </div>
+// //             </div>
 
-// //           <div className="space-y-1">
-// //             <TrendingCourse2 />
-// //             <GetInTouchForm />
-// //             <FeaturedUniversities />
+// //             <div className="px-8 py-4 border-b border-gray-100">
+// //               <div className="flex items-center text-sm text-gray-600 space-x-2">
+// //                 <Link to="/" className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+// //                   <Home size={18}/> Home
+// //                 </Link>
+// //                 <span>/</span>
+// //                 <Link to="/specialization" className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+// //                   <Layers size={18}/> Specialization
+// //                 </Link>
+// //                 <span>/</span>
+// //                 <span className="font-medium text-gray-900">{categoryData.name}</span>
+// //                 {level && (
+// //                   <>
+// //                     <span>/</span>
+// //                     <span className="font-medium text-blue-600">{currentLevel.title}</span>
+// //                   </>
+// //                 )}
+// //               </div>
+// //             </div>
+
+      
+// //             <div className="border-b border-gray-200 bg-white sticky top-0 z-20 shadow-sm">
+// //   <div className="px-4 sm:px-8 py-4">
+// //     <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Select Education Level</h3>
+// //     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+// //       {[
+// //         { key: 'diploma', label: 'Diploma', icon: FileText },
+// //         { key: 'undergraduate', label: 'Undergraduate', icon: GraduationCap },
+// //         { key: 'postgraduate', label: 'Postgraduate', icon: Award },
+// //         { key: 'phd', label: 'PhD', icon: Target },
+// //         { key: 'certificate', label: 'Certificates', icon: BookOpen }
+// //       ].map((levelItem) => (
+// //         <Link
+// //           key={levelItem.key}
+// //           to={`/specialization/${slug}-${levelItem.key}`}
+// //           className={`flex items-center justify-center gap-2 px-3 sm:px-5 py-3 rounded-xl font-medium transition-all text-center ${
+// //             selectedLevel === levelItem.key
+// //               ? 'bg-blue-600 text-white shadow-lg'
+// //               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+// //           }`}
+// //         >
+// //           <levelItem.icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+// //           <span className="text-sm sm:text-base whitespace-nowrap">{levelItem.label}</span>
+// //         </Link>
+// //       ))}
+// //     </div>
+// //   </div>
+// // </div>
+
+// //           <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-b border-blue-100">
+// //   <div className="px-4 sm:px-8 py-6">
+// //     <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">{currentLevel.title || categoryData.name}</h2>
+// //     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+// //       <div className="flex items-center gap-3">
+// //         <div className="bg-blue-100 p-2 rounded-lg flex-shrink-0">
+// //           <Clock className="w-5 h-5 text-blue-600" />
+// //         </div>
+// //         <div className="min-w-0">
+// //           <div className="text-sm text-gray-600">Duration</div>
+// //           <div className="font-semibold text-gray-900 whitespace-nowrap text-sm">{currentLevel.duration || 'Varies'}</div>
+// //         </div>
+// //       </div>
+// //       <div className="flex items-center gap-3">
+// //         <div className="bg-green-100 p-2 rounded-lg flex-shrink-0">
+// //           <DollarSign className="w-5 h-5 text-green-600" />
+// //         </div>
+// //         <div className="min-w-0">
+// //           <div className="text-sm text-gray-600">Tuition Fees</div>
+// //           <div className="font-semibold text-gray-900 whitespace-nowrap text-xs sm:text-sm">{currentLevel.fees || 'Contact Us'}</div>
+// //         </div>
+// //       </div>
+// //       <div className="flex items-center gap-3">
+// //         <div className="bg-purple-100 p-2 rounded-lg flex-shrink-0">
+// //           <Calendar className="w-5 h-5 text-purple-600" />
+// //         </div>
+// //         <div className="min-w-0">
+// //           <div className="text-sm text-gray-600">Intake</div>
+// //           <div className="font-semibold text-gray-900 whitespace-nowrap text-xs sm:text-sm">{currentLevel.intake || 'Multiple'}</div>
+// //         </div>
+// //       </div>
+// //       <div className="flex items-center gap-3">
+// //         <div className="bg-orange-100 p-2 rounded-lg flex-shrink-0">
+// //           <Award className="w-5 h-5 text-orange-600" />
+// //         </div>
+// //         <div className="min-w-0">
+// //           <div className="text-sm text-gray-600">Accreditation</div>
+// //           <div className="font-semibold text-gray-900 whitespace-nowrap text-xs sm:text-sm">{currentLevel.accreditation || 'MQA'}</div>
+// //         </div>
+// //       </div>
+// //     </div>
+// //   </div>
+// // </div>
+
+// //             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8">
+              
+// //               <div className="lg:col-span-2 space-y-8">
+                
+// //                 {tabs.length > 0 ? (
+// //                   tabs.map(({ name }, idx) => (
+// //                     <motion.section
+// //                       key={name}
+// //                       ref={sectionRefs.current[name]}
+// //                       initial={{ opacity: 0, y: 50 }}
+// //                       whileInView={{ opacity: 1, y: 0 }}
+// //                       viewport={{ once: true }}
+// //                       transition={{ duration: 0.6, delay: idx * 0.1 }}
+// //                       className="scroll-mt-24"
+// //                     >
+// //                       <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl p-6 border border-blue-100 shadow-md hover:shadow-lg transition-shadow">
+// //                         <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+// //                           <span className="text-blue-600">{tabIcons[name] || <Info className="w-6 h-6" />}</span>
+// //                           {name}
+// //                         </h2>
+// //                         <div 
+// //                           className="prose prose-blue max-w-none text-gray-700 leading-relaxed"
+// //                           dangerouslySetInnerHTML={{ __html: formatHTML(contentMap[name]) }} 
+// //                         />
+// //                       </div>
+// //                     </motion.section>
+// //                   ))
+// //                 ) : (
+// //                   <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center">
+// //                     <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+// //                     <p className="text-gray-500">Course details coming soon.</p>
+// //                   </div>
+// //                 )}
+
+// //                 <motion.div
+// //                   initial={{ opacity: 0, y: 50 }}
+// //                   whileInView={{ opacity: 1, y: 0 }}
+// //                   viewport={{ once: true }}
+// //                   transition={{ duration: 0.6 }}
+// //                 >
+// //                   <UniversityCard />
+// //                 </motion.div>
+
+// //                 {faqs.length > 0 && (
+// //                   <motion.section
+// //                     initial={{ opacity: 0, y: 50 }}
+// //                     whileInView={{ opacity: 1, y: 0 }}
+// //                     viewport={{ once: true }}
+// //                     transition={{ duration: 0.6 }}
+// //                     className="bg-white rounded-2xl p-6 border border-gray-100 shadow-md"
+// //                   >
+// //                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+// //                       <Lightbulb className="w-6 h-6 text-blue-600" />
+// //                       Frequently Asked Questions
+// //                     </h2>
+// //                     <div className="space-y-4">
+// //                       {faqs.map((faq, i) => (
+// //                         <details 
+// //                           key={i} 
+// //                           className="group bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl overflow-hidden border border-blue-100"
+// //                         >
+// //                           <summary className="cursor-pointer font-semibold text-gray-900 px-6 py-4 flex items-center justify-between hover:bg-blue-100 transition-colors">
+// //                             <span>{faq.question}</span>
+// //                             <ChevronRight className="w-5 h-5 text-blue-600 group-open:rotate-90 transition-transform" />
+// //                           </summary>
+// //                           <div 
+// //                             className="px-6 pb-4 text-gray-700 leading-relaxed prose prose-sm max-w-none"
+// //                             dangerouslySetInnerHTML={{ __html: formatHTML(faq.answer) }}
+// //                           />
+// //                         </details>
+// //                       ))}
+// //                     </div>
+// //                   </motion.section>
+// //                 )}
+// //               </div>
+
+// //               <div className="lg:col-span-1 space-y-6">
+                
+// //                 <motion.div
+// //                   initial={{ opacity: 0, x: 50 }}
+// //                   animate={{ opacity: 1, x: 0 }}
+// //                   transition={{ duration: 0.6 }}
+// //                   className="bg-white border border-gray-200 rounded-xl p-6 shadow-md sticky top-24"
+// //                 >
+// //                   <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+// //                     <Building2 className="w-6 h-6 text-blue-600" />
+// //                     Quick Information
+// //                   </h3>
+// //                   <div className="space-y-4">
+// //                     <div className="flex items-center gap-3">
+// //                       <div className="bg-blue-100 p-2 rounded-lg">
+// //                         <Globe className="w-5 h-5 text-blue-600" />
+// //                       </div>
+// //                       <div>
+// //                         <div className="text-sm text-gray-600">Language</div>
+// //                         <div className="font-semibold text-gray-900">English Taught</div>
+// //                       </div>
+// //                     </div>
+// //                   </div>
+// //                   <button className="mt-6 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl">
+// //                     Apply Now
+// //                     <ChevronRight className="w-5 h-5" />
+// //                   </button>
+// //                 </motion.div>
+
+// //                 <TrendingCourse2 />
+                
+// //                 <GetInTouchForm />
+                
+// //              <div className="-mt-2">
+// //                   <FeaturedUniversities />
+// //                 </div>
+              
+// //               </div>
+// //             </div>
+
 // //           </div>
 // //         </div>
-// //       </section>
+// //       </div>
 // //     </>
 // //   );
 // // };
 
 // // export default SpecializationDetail;
-// import React, { useRef, useEffect, useState } from "react";
-// import { useParams, Link } from "react-router-dom";
-// import { 
-//   Home, Layers, Info, Clock, DollarSign, Briefcase, Share2, 
-//   ArrowLeft, Star, MapPin, Users, BookOpen, CheckCircle, 
-//   Award, TrendingUp, Building2, Target, Lightbulb, 
-//   ChevronRight, GraduationCap, FileText, Calendar, Globe
-// } from "lucide-react";
-// import { motion } from "framer-motion";
-// import api from "../api";
-// import GetInTouchForm from "../components/GetInTouchForm";
-// import FeaturedUniversities from "../components/FeaturedUniversities";
-// import TrendingCourse2 from "../components/TrandingCourse2";
-// import UniversityCard from "../components/UniversityCard";
-// import { Helmet } from "react-helmet";
 
-// const tabIcons = {
-//   "About Course": <Info size={16} />,
-//   "Duration": <Clock size={16} />,
-//   "Cost": <DollarSign size={16} />,
-//   "Career": <Briefcase size={16} />,
-//   "Branches": <Share2 size={16} />,
-// };
 
-// const formatHTML = (html) => {
-//   if (!html) return "";
-//   const textarea = document.createElement("textarea");
-//   textarea.innerHTML = html;
-//   let decoded = textarea.value;
-//   decoded = decoded.replace(/<span[^>]*>/gi, "").replace(/<\/span>/gi, "");
-//   decoded = decoded.replace(/style="[^"]*"/gi, "").replace(/&nbsp;/gi, " ");
-//   decoded = decoded.replace(/(?:\r\n|\r|\n)/g, "</p><p>");
-//   decoded = `<p>${decoded}</p>`.replace(/<p><\/p>/g, "");
-//   return decoded;
-// };
-
-// const SpecializationDetail = () => {
-//   const { name } = useParams();
-//   const slug = name.toLowerCase();
-//   const formattedName = slug.split("-").map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
-
-//   const [tabs, setTabs] = useState([]);
-//   const [activeTab, setActiveTab] = useState(null);
-//   const [contentMap, setContentMap] = useState({});
-//   const [faqs, setFaqs] = useState([]);
-//   const [seo, setSeo] = useState({});
-//   const [specializationData, setSpecializationData] = useState(null);
-//   const sectionRefs = useRef({});
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         const res = await api.get(`/specialization-detail-by-slug/${slug}`);
-//         const spec = res?.data?.data?.specialization;
-//         const contents = spec?.contents || [];
-        
-//         setSpecializationData(spec);
-//         setSeo(res.data.data.seo || {});
-        
-//         const map = {};
-//         const dynamicTabs = [];
-//         contents.forEach((c) => {
-//           if(c.tab && c.description){
-//             map[c.tab] = c.description;
-//             dynamicTabs.push({ name: c.tab, icon: tabIcons[c.tab] || <Info size={16}/> });
-//             sectionRefs.current[c.tab] = React.createRef();
-//           }
-//         });
-        
-//         setContentMap(map);
-//         setTabs(dynamicTabs);
-//         setActiveTab(dynamicTabs[0]?.name || "");
-//         setFaqs(spec?.faqs || []);
-//       } catch(e){ 
-//         console.error(e); 
-//       }
-//     };
-//     fetchData();
-//   }, [slug]);
-
-//   const handleTabClick = (tabName) => {
-//     setActiveTab(tabName);
-//     sectionRefs.current[tabName]?.current?.scrollIntoView({ 
-//       behavior:"smooth", 
-//       block:"start"
-//     });
-//   };
-
-//   if (!specializationData) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <div className="text-center">
-//           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-//           <p className="mt-4 text-gray-600">Loading...</p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <>
-//       <Helmet>
-//         <title>{seo?.meta_title || `${formattedName} Course in Malaysia`}</title>
-//         <meta name="description" content={seo?.meta_description || `Complete guide to ${formattedName} programs in Malaysia`} />
-//         <meta name="keywords" content={seo?.meta_keyword || formattedName} />
-//       </Helmet>
-
-//       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-//         {/* Modern Header with Gradient */}
-//         <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-cyan-600 text-white">
-//           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-//             <Link to="/specialization" className="inline-flex items-center gap-2 text-blue-100 hover:text-white transition-colors mb-6">
-//               <ArrowLeft className="w-5 h-5" />
-//               Back to All Specializations
-//             </Link>
-            
-//             <div className="text-center mt-4">
-//               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-//                 {formattedName}
-//               </h1>
-//               <p className="text-blue-100 text-lg">
-//                 Complete Guide to <span className="font-semibold">{formattedName}</span> Programs in Malaysia
-//               </p>
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-16">
-//           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            
-//             {/* Hero Image Section */}
-//             {specializationData?.image && (
-//               <div className="relative h-96">
-//                 <img
-//                   src={specializationData.image}
-//                   alt={formattedName}
-//                   className="w-full h-full object-cover"
-//                 />
-//                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-//                 <div className="absolute bottom-0 left-0 right-0 p-8">
-//                   <div className="flex items-center gap-3 mb-3">
-//                     {specializationData?.rating && (
-//                       <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full">
-//                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-//                         <span className="text-sm font-semibold text-gray-900">{specializationData.rating}</span>
-//                         {specializationData?.reviews && (
-//                           <span className="text-sm text-gray-600">({specializationData.reviews} reviews)</span>
-//                         )}
-//                       </div>
-//                     )}
-//                   </div>
-//                 </div>
-//               </div>
-//             )}
-
-//             {/* Breadcrumb */}
-//             <div className="px-8 py-4 border-b border-gray-100">
-//               <div className="flex items-center text-sm text-gray-600 space-x-2">
-//                 <Link to="/" className="flex items-center gap-1 hover:text-blue-600 transition-colors">
-//                   <Home size={18}/> Home
-//                 </Link>
-//                 <span>/</span>
-//                 <Link to="/specialization" className="flex items-center gap-1 hover:text-blue-600 transition-colors">
-//                   <Layers size={18}/> Specialization
-//                 </Link>
-//                 <span>/</span>
-//                 <span className="font-medium text-gray-900">{formattedName}</span>
-//               </div>
-//             </div>
-
-//             {/* Sticky Tabs Navigation */}
-//             <div className="border-b border-gray-200 bg-white sticky top-0 z-20 shadow-sm">
-//               <div className="px-8 py-4">
-//                 <div className="flex flex-wrap gap-3">
-//                   {tabs.map(({ name, icon }) => (
-//                     <button
-//                       key={name}
-//                       onClick={() => handleTabClick(name)}
-//                       className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all ${
-//                         activeTab === name
-//                           ? 'bg-blue-600 text-white shadow-lg'
-//                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-//                       }`}
-//                     >
-//                       {icon}
-//                       {name}
-//                     </button>
-//                   ))}
-//                 </div>
-//               </div>
-//             </div>
-
-//             {/* Main Content Grid */}
-//             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8">
-              
-//               {/* Left Column - Main Content */}
-//               <div className="lg:col-span-2 space-y-8">
-                
-//                 {/* Dynamic Content Sections from API */}
-//                 {tabs.map(({ name }, idx) => (
-//                   <motion.section
-//                     key={name}
-//                     ref={sectionRefs.current[name]}
-//                     initial={{ opacity: 0, y: 50 }}
-//                     whileInView={{ opacity: 1, y: 0 }}
-//                     viewport={{ once: true }}
-//                     transition={{ duration: 0.6, delay: idx * 0.1 }}
-//                     className="scroll-mt-24"
-//                   >
-//                     <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl p-6 border border-blue-100 shadow-md hover:shadow-lg transition-shadow">
-//                       <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-//                         {tabIcons[name] || <Info className="w-6 h-6 text-blue-600" />}
-//                         <span className="text-blue-600">{name}</span>
-//                       </h2>
-//                       <div 
-//                         className="prose prose-blue max-w-none text-gray-700 leading-relaxed"
-//                         dangerouslySetInnerHTML={{ __html: formatHTML(contentMap[name]) }} 
-//                       />
-//                     </div>
-//                   </motion.section>
-//                 ))}
-
-//                 {/* University Cards */}
-//                 <motion.div
-//                   initial={{ opacity: 0, y: 50 }}
-//                   whileInView={{ opacity: 1, y: 0 }}
-//                   viewport={{ once: true }}
-//                   transition={{ duration: 0.6 }}
-//                 >
-//                   <UniversityCard />
-//                 </motion.div>
-
-//                 {/* FAQs Section */}
-//                 {faqs.length > 0 && (
-//                   <motion.section
-//                     initial={{ opacity: 0, y: 50 }}
-//                     whileInView={{ opacity: 1, y: 0 }}
-//                     viewport={{ once: true }}
-//                     transition={{ duration: 0.6 }}
-//                     className="bg-white rounded-2xl p-6 border border-gray-100 shadow-md"
-//                   >
-//                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-//                       <Lightbulb className="w-6 h-6 text-blue-600" />
-//                       Frequently Asked Questions
-//                     </h2>
-//                     <div className="space-y-4">
-//                       {faqs.map((faq, i) => (
-//                         <details 
-//                           key={i} 
-//                           className="group bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl overflow-hidden border border-blue-100"
-//                         >
-//                           <summary className="cursor-pointer font-semibold text-gray-900 px-6 py-4 flex items-center justify-between hover:bg-blue-100 transition-colors">
-//                             <span>{faq.question}</span>
-//                             <ChevronRight className="w-5 h-5 text-blue-600 group-open:rotate-90 transition-transform" />
-//                           </summary>
-//                           <div 
-//                             className="px-6 pb-4 text-gray-700 leading-relaxed prose prose-sm max-w-none"
-//                             dangerouslySetInnerHTML={{ __html: formatHTML(faq.answer) }}
-//                           />
-//                         </details>
-//                       ))}
-//                     </div>
-//                   </motion.section>
-//                 )}
-//               </div>
-
-//               {/* Right Column - Sidebar */}
-//               <div className="lg:col-span-1 space-y-6">
-                
-//                 {/* Quick Info Card */}
-//                 {specializationData && (
-//                   <motion.div
-//                     initial={{ opacity: 0, x: 50 }}
-//                     animate={{ opacity: 1, x: 0 }}
-//                     transition={{ duration: 0.6 }}
-//                     className="bg-white border border-gray-200 rounded-xl p-6 shadow-md sticky top-24"
-//                   >
-//                     <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-//                       <Building2 className="w-6 h-6 text-blue-600" />
-//                       Quick Information
-//                     </h3>
-//                     <div className="space-y-4">
-//                       {specializationData.duration && (
-//                         <div className="flex items-center gap-3">
-//                           <div className="bg-blue-100 p-2 rounded-lg">
-//                             <Clock className="w-5 h-5 text-blue-600" />
-//                           </div>
-//                           <div>
-//                             <div className="text-sm text-gray-600">Duration</div>
-//                             <div className="font-semibold text-gray-900">{specializationData.duration}</div>
-//                           </div>
-//                         </div>
-//                       )}
-//                       {specializationData.fees && (
-//                         <div className="flex items-center gap-3">
-//                           <div className="bg-green-100 p-2 rounded-lg">
-//                             <DollarSign className="w-5 h-5 text-green-600" />
-//                           </div>
-//                           <div>
-//                             <div className="text-sm text-gray-600">Tuition Fees</div>
-//                             <div className="font-semibold text-gray-900">{specializationData.fees}</div>
-//                           </div>
-//                         </div>
-//                       )}
-//                       {specializationData.intake && (
-//                         <div className="flex items-center gap-3">
-//                           <div className="bg-purple-100 p-2 rounded-lg">
-//                             <Calendar className="w-5 h-5 text-purple-600" />
-//                           </div>
-//                           <div>
-//                             <div className="text-sm text-gray-600">Intake</div>
-//                             <div className="font-semibold text-gray-900">{specializationData.intake}</div>
-//                           </div>
-//                         </div>
-//                       )}
-//                     </div>
-//                     <button className="mt-6 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl">
-//                       Apply Now
-//                       <ChevronRight className="w-5 h-5" />
-//                     </button>
-//                   </motion.div>
-//                 )}
-
-//                 {/* Sidebar Components */}
-//                 <TrendingCourse2 />
-//                 <GetInTouchForm />
-//                 <FeaturedUniversities />
-//               </div>
-//             </div>
-
-//           </div>
-//         </div>
-//       </div>
-//     </>
-//   );
-// };
-
-// export default SpecializationDetail;
 import React, { useRef, useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, Layers, Info, Clock, DollarSign, Briefcase, Share2, 
   ArrowLeft, Star, MapPin, Users, BookOpen, CheckCircle, 
@@ -839,107 +621,330 @@ const tabIcons = {
   "Cost": <DollarSign size={16} />,
   "Career": <Briefcase size={16} />,
   "Branches": <Share2 size={16} />,
-};
-
-const formatHTML = (html) => {
+  "Entry Requirement": <FileText size={16} />,
+};const formatHTML = (html) => {
   if (!html) return "";
+  
   const textarea = document.createElement("textarea");
   textarea.innerHTML = html;
   let decoded = textarea.value;
+  
+  // Clean spans and inline styles
   decoded = decoded.replace(/<span[^>]*>/gi, "").replace(/<\/span>/gi, "");
   decoded = decoded.replace(/style="[^"]*"/gi, "").replace(/&nbsp;/gi, " ");
-  decoded = decoded.replace(/(?:\r\n|\r|\n)/g, "</p><p>");
-  decoded = `<p>${decoded}</p>`.replace(/<p><\/p>/g, "");
+  
+  // 🎯 TABLE PROCESSING
+  decoded = decoded.replace(
+    /<table[^>]*>/gi, 
+    '<div class="overflow-x-auto my-6 rounded-xl shadow-lg"><table class="min-w-full border-collapse bg-white border border-gray-200">'
+  );
+  decoded = decoded.replace(/<\/table>/gi, '</table></div>');
+  
+  if (!decoded.includes('<thead')) {
+    decoded = decoded.replace(
+      /(<table[^>]*>)\s*(<tr[^>]*>)/i,
+      '$1<thead class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800">$2'
+    );
+    let firstTrEnd = decoded.indexOf('</tr>');
+    if (firstTrEnd !== -1) {
+      decoded = decoded.substring(0, firstTrEnd + 5) + '</thead><tbody class="divide-y divide-gray-200">' + decoded.substring(firstTrEnd + 5);
+    }
+    decoded = decoded.replace(/<\/table>/i, '</tbody></table>');
+  } else {
+    decoded = decoded.replace(/<thead[^>]*>/gi, '<thead class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800">');
+    decoded = decoded.replace(/<tbody[^>]*>/gi, '<tbody class="divide-y divide-gray-200">');
+  }
+  
+  decoded = decoded.replace(/<th([^>]*)>/gi, '<th$1 class="px-6 py-4 text-left text-sm font-bold text-white bg-blue-700 uppercase tracking-wider border border-white/20 whitespace-nowrap align-middle">');
+  decoded = decoded.replace(/<tr([^>]*)>/gi, '<tr$1 class="hover:bg-blue-50 transition-colors duration-150">');
+  decoded = decoded.replace(/<td([^>]*)>/gi, '<td$1 class="px-6 py-4 text-sm text-gray-900 border border-gray-200 align-middle">');
+  decoded = decoded.replace(/<th([^>]*)><\/th>/gi, '<th$1>&nbsp;</th>');
+  decoded = decoded.replace(/<td([^>]*)><\/td>/gi, '<td$1>&nbsp;</td>');
+  
+  // 🎯 ANCHOR/LINK STYLING - FIX LINKS
+  decoded = decoded.replace(/<a\s+/gi, '<a class="text-blue-600 hover:text-blue-800 underline font-medium transition-colors" ');
+  
+  // 🎯 LIST STYLING - FIX BULLETS & NUMBERS
+  decoded = decoded.replace(/<ul>/gi, '<ul class="space-y-2 my-4 pl-6">');
+  decoded = decoded.replace(/<ol>/gi, '<ol class="space-y-2 my-4 pl-6">');
+  decoded = decoded.replace(/<li>/gi, '<li class="text-gray-700 leading-relaxed relative pl-2" style="display: list-item; list-style-position: outside;">');
+  
+  // Apply bullet/number styles to ul/ol
+  decoded = decoded.replace(/<ul class="space-y-2 my-4 pl-6">/gi, '<ul class="space-y-2 my-4 pl-6" style="list-style-type: disc;">');
+  decoded = decoded.replace(/<ol class="space-y-2 my-4 pl-6">/gi, '<ol class="space-y-2 my-4 pl-6" style="list-style-type: decimal;">');
+  
+
+// Common heading keywords
+decoded = decoded.replace(/^(Career Opportunities?|Key Features?|Admission Process|Entry Requirements?|Top Universities|Specializations?|Application|Coverage|Eligibility|Support|Description|Availability|Examples|Duration|Overview|Aerodynamics Engineering|Propulsion Systems Engineering|Aerospace Structures Engineering|Aeronautical Engineering|Aircraft Engineering):?\s*$/gim, '<h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4 block" style="display: block !important;">$1</h3>');
+
+// Convert bold standalone lines to headings
+decoded = decoded.replace(/<p[^>]*>\s*<strong>([A-Z][^<]+)<\/strong>\s*<\/p>/gi, '<h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4 block" style="display: block !important;">$1</h3>');
+  
+  // 🎯 PARAGRAPH STYLING
+  decoded = decoded.replace(/<p>/gi, '<p class="mb-4 text-gray-700 leading-relaxed">');
+  
+  // Clean up
+  decoded = decoded.replace(/\n{3,}/g, '\n\n');
+  decoded = decoded.replace(/<p[^>]*>\s*<\/p>/g, '');
+  
   return decoded;
 };
 
-const SpecializationDetail = () => {
-  const { name } = useParams();
-  const slug = name.toLowerCase();
-  const formattedName = slug.split("-").map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
 
-  const [selectedLevel, setSelectedLevel] = useState('undergraduate');
+const detectCategoryFromSlug = (slug, name) => {
+  const lowerSlug = slug?.toLowerCase() || '';
+  const lowerName = name?.toLowerCase() || '';
+  
+  if (lowerSlug.includes('engineer') || lowerName.includes('engineer')) return 'Engineering';
+  if (lowerSlug.includes('computer') || lowerSlug.includes('software') || lowerSlug.includes('it') || lowerSlug.includes('technology') || lowerSlug.includes('cyber') || lowerSlug.includes('data') || lowerName.includes('computer') || lowerName.includes('software')) return 'Technology & IT';
+  if (lowerSlug.includes('medic') || lowerSlug.includes('health') || lowerSlug.includes('nurs') || lowerSlug.includes('pharmac') || lowerSlug.includes('dent') || lowerName.includes('medical')) return 'Medical & Health';
+  if (lowerSlug.includes('business') || lowerSlug.includes('management') || lowerSlug.includes('accounting') || lowerSlug.includes('finance') || lowerSlug.includes('marketing') || lowerSlug.includes('entrepreneur') || lowerSlug.includes('banking') || lowerSlug.includes('human-resource') || lowerSlug.includes('hrm') || lowerSlug.includes('supply-chain') || lowerName.includes('business') || lowerName.includes('accounting')) return 'Business & Management';
+  if (lowerSlug.includes('science') || lowerSlug.includes('biology') || lowerSlug.includes('chemistry') || lowerSlug.includes('physics') || lowerSlug.includes('biotechnology') || lowerSlug.includes('agriculture') || lowerSlug.includes('actuarial') || lowerName.includes('science')) return 'Science';
+  if (lowerSlug.includes('art') || lowerSlug.includes('design') || lowerSlug.includes('graphic') || lowerSlug.includes('fashion') || lowerSlug.includes('interior') || lowerSlug.includes('architecture') || lowerName.includes('design') || lowerName.includes('art')) return 'Arts & Design';
+  if (lowerSlug.includes('social') || lowerSlug.includes('psychology') || lowerSlug.includes('sociology') || lowerSlug.includes('education') || lowerSlug.includes('law') || lowerSlug.includes('political') || lowerName.includes('social') || lowerName.includes('law')) return 'Social Sciences';
+  if (lowerSlug.includes('math') || lowerSlug.includes('statistic') || lowerName.includes('math') || lowerName.includes('statistic')) return 'Mathematics';
+  
+  return 'General';
+};
+
+const getCategoryImage = (category) => {
+  const categoryImages = {
+    'Engineering': 'https://images.pexels.com/photos/159306/construction-site-build-construction-work-159306.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'Technology & IT': 'https://images.pexels.com/photos/546819/pexels-photo-546819.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'Medical & Health': 'https://images.pexels.com/photos/356054/pexels-photo-356054.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'Business & Management': 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'Science': 'https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'Arts & Design': 'https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'Social Sciences': 'https://images.pexels.com/photos/4101143/pexels-photo-4101143.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'Mathematics': 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=800',
+    'General': 'https://images.pexels.com/photos/380768/pexels-photo-380768.jpeg?auto=compress&cs=tinysrgb&w=800'
+  };
+  
+  return categoryImages[category] || categoryImages['General'];
+};
+
+const SpecializationDetail = () => {
+ const { name, level, nameWithLevel } = useParams();
+
+// Extract name and level from combined slug
+let slug, selectedLevelFromUrl;
+
+if (nameWithLevel) {
+  // New format: accounting-diploma
+  const parts = nameWithLevel.split('-');
+  const lastPart = parts[parts.length - 1];
+  
+  // Check if last part is a valid level
+  const validLevels = ['diploma', 'undergraduate', 'postgraduate', 'phd', 'certificate'];
+  
+  if (validLevels.includes(lastPart)) {
+    selectedLevelFromUrl = lastPart;
+    slug = parts.slice(0, -1).join('-'); // accounting
+  } else {
+    slug = nameWithLevel; // No level specified
+    selectedLevelFromUrl = null;
+  }
+} else {
+  // Old format fallback: name/level
+  slug = name?.toLowerCase();
+  selectedLevelFromUrl = level;
+}
+
+const formattedName = slug ? slug.split("-").map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(" ") : "Course";
+
+  const thumbnailFromState = location.state?.thumbnail;
+
+  const [selectedLevel, setSelectedLevel] = useState(selectedLevelFromUrl || 'undergraduate');
   const [tabs, setTabs] = useState([]);
   const [activeTab, setActiveTab] = useState(null);
   const [contentMap, setContentMap] = useState({});
   const [faqs, setFaqs] = useState([]);
   const [seo, setSeo] = useState({});
-  const [specializationData, setSpecializationData] = useState(null);
+  const [categoryData, setCategoryData] = useState(null);
+  const [relatedUniversities, setRelatedUniversities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [educationLevels, setEducationLevels] = useState({});
   const sectionRefs = useRef({});
+useEffect(() => {
+  const fetchData = async () => {
+    if (!slug) {
+      setError("Invalid URL - No course name provided");
+      setLoading(false);
+      return;
+    }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await api.get(`/specialization-detail-by-slug/${slug}`);
-        const spec = res?.data?.data?.specialization;
-        const contents = spec?.contents || [];
-        
-        setSpecializationData(spec);
-        setSeo(res.data.data.seo || {});
-        
-        // Education levels data (API se aayega ya default)
-        setEducationLevels(spec?.educationLevels || {
-          diploma: { title: 'Diploma', duration: '2.5 Years', fees: 'RM 18,000/year', intake: 'January, April, August', accreditation: 'MQA Approved' },
-          undergraduate: { title: 'Undergraduate', duration: '4 Years', fees: 'RM 35,000/year', intake: 'February, July, September', accreditation: 'EAC Accredited' },
-          postgraduate: { title: 'Postgraduate', duration: '1.5-2 Years', fees: 'RM 42,000/year', intake: 'February, September', accreditation: 'MQA Accredited' },
-          phd: { title: 'PhD', duration: '3-4 Years', fees: 'RM 38,000/year', intake: 'Throughout the year', accreditation: 'MQA Accredited' },
-          certificate: { title: 'Certificates', duration: '3-6 Months', fees: 'RM 5,000-12,000', intake: 'Multiple intakes', accreditation: 'Professional Bodies' }
-        });
-        
-        const map = {};
-        const dynamicTabs = [];
-        contents.forEach((c) => {
-          if(c.tab && c.description){
-            map[c.tab] = c.description;
-            dynamicTabs.push({ name: c.tab, icon: tabIcons[c.tab] || <Info size={16}/> });
-            sectionRefs.current[c.tab] = React.createRef();
-          }
-        });
-        
-        setContentMap(map);
-        setTabs(dynamicTabs);
-        setActiveTab(dynamicTabs[0]?.name || "");
-        setFaqs(spec?.faqs || []);
-      } catch(e){ 
-        console.error(e); 
+    try {
+      setLoading(true);
+      
+      const res = await api.get(`/specialization-detail-by-slug/${slug}`);
+      
+      // ✅ CORRECT FIX: Handle actual API response structure
+      const category = res?.data?.data?.specialization || res?.data?.specialization || res?.data?.category || res?.data;
+      
+      if (!category || !category.name) {
+        throw new Error("Course not found. This specialization may not exist or the slug might be incorrect.");
       }
-    };
-    fetchData();
-  }, [slug]);
-
-  const handleTabClick = (tabName) => {
-    setActiveTab(tabName);
-    sectionRefs.current[tabName]?.current?.scrollIntoView({ 
-      behavior:"smooth", 
-      block:"start"
-    });
+      
+      const contents = category?.contents || [];
+      
+      setCategoryData(category);
+      setSeo(res.data?.seo || res.data?.data?.seo || category?.seo || {});
+      setRelatedUniversities(res.data?.related_universities || res.data?.data?.related_universities || category?.related_universities || []);
+      
+      setEducationLevels({
+        diploma: { title: 'Diploma', duration: '2.5 Years', fees: 'RM 18,000/year', intake: 'January, April, August', accreditation: 'MQA Approved' },
+        undergraduate: { title: 'Undergraduate', duration: '4 Years', fees: 'RM 35,000/year', intake: 'February, July, September', accreditation: 'EAC Accredited' },
+        postgraduate: { title: 'Postgraduate', duration: '1.5-2 Years', fees: 'RM 42,000/year', intake: 'February, September', accreditation: 'MQA Accredited' },
+        phd: { title: 'PhD', duration: '3-4 Years', fees: 'RM 38,000/year', intake: 'Throughout the year', accreditation: 'MQA Accredited' },
+        certificate: { title: 'Certificates', duration: '3-6 Months', fees: 'RM 5,000-12,000', intake: 'Multiple intakes', accreditation: 'Professional Bodies' }
+      });
+      
+      const map = {};
+      const dynamicTabs = [];
+      contents.forEach((c) => {
+        if(c.tab && c.description){
+          map[c.tab] = c.description;
+          dynamicTabs.push({ 
+            name: c.tab, 
+            icon: tabIcons[c.tab] || <Info size={16}/> 
+          });
+          sectionRefs.current[c.tab] = React.createRef();
+        }
+      });
+      
+      setContentMap(map);
+      setTabs(dynamicTabs);
+      setActiveTab(dynamicTabs[0]?.name || "");
+      setFaqs(category?.faqs || res.data?.faqs || []);
+      setLoading(false);
+    } catch(e) { 
+      let errorMessage = "Failed to load course data";
+      
+      if (e.response?.status === 404) {
+        errorMessage = `Course "${formattedName}" not found. Please check if this specialization exists in the system.`;
+      } else if (e.response?.data?.message) {
+        errorMessage = e.response.data.message;
+      } else if (e.message) {
+        errorMessage = e.message;
+      }
+      
+      setError(errorMessage);
+      setLoading(false);
+    }
   };
+  
+  fetchData();
+}, [slug, formattedName]);
+useEffect(() => {
+  if (selectedLevelFromUrl && educationLevels[selectedLevelFromUrl]) {
+    setSelectedLevel(selectedLevelFromUrl);
+  } else if (!selectedLevelFromUrl) {
+    setSelectedLevel('undergraduate');
+  }
+}, [selectedLevelFromUrl, educationLevels]);
 
-  if (!specializationData) {
+const handleTabClick = (tabName) => {
+  setActiveTab(tabName);
+  const element = sectionRefs.current[tabName]?.current;
+  if (element) {
+    const offset = 200; // Sticky nav height + padding
+    const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+    window.scrollTo({
+      top: elementPosition - offset,
+      behavior: 'smooth'
+    });
+  }
+};
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 font-medium">Loading {formattedName}...</p>
+          <p className="mt-2 text-sm text-gray-500">Fetching course details</p>
         </div>
       </div>
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="bg-red-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="w-10 h-10 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Course Not Found</h2>
+          <p className="text-gray-600 mb-2">{error}</p>
+          <div className="bg-gray-100 rounded-lg p-4 mb-6">
+            <p className="text-sm text-gray-700 mb-2">
+              <strong>Requested:</strong> {formattedName}
+            </p>
+            <p className="text-sm text-gray-700">
+              <strong>Slug:</strong> {slug}
+            </p>
+          </div>
+          <div className="space-y-3">
+            <Link 
+              to="/specialization" 
+              className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back to Specializations
+            </Link>
+            <p className="text-sm text-gray-500">
+              Check the browser console (F12) for detailed error information
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!categoryData) {
+    return null;
+  }
+
   const currentLevel = educationLevels[selectedLevel] || {};
-  const heroImage = specializationData?.image || 'https://images.pexels.com/photos/159306/construction-site-build-construction-work-159306.jpeg?auto=compress&cs=tinysrgb&w=1200';
+  const detectedCategory = detectCategoryFromSlug(slug, categoryData.name);
+  
+  let heroImage = null;
+  
+  if (thumbnailFromState) {
+    heroImage = `https://www.educationmalaysia.in/storage/${thumbnailFromState}`;
+  }
+  else if (seo?.og_image_path) {
+    heroImage = `https://www.educationmalaysia.in/storage/${seo.og_image_path}`;
+  }
+  else if (categoryData?.thumbnail_path) {
+    heroImage = `https://www.educationmalaysia.in/storage/${categoryData.thumbnail_path}`;
+  }
+  else if (categoryData?.image_path) {
+    heroImage = `https://www.educationmalaysia.in/storage/${categoryData.image_path}`;
+  }
+  else if (categoryData?.contents && categoryData.contents.length > 0) {
+    const contentWithImage = categoryData.contents.find(c => c.image_path && c.image_path.trim() !== '');
+    if (contentWithImage) {
+      heroImage = `https://www.educationmalaysia.in/storage/${contentWithImage.image_path}`;
+    }
+  }
+  
+  if (!heroImage) {
+    heroImage = getCategoryImage(detectedCategory);
+  }
 
   return (
     <>
       <Helmet>
-        <title>{seo?.meta_title || `${formattedName} Course in Malaysia`}</title>
-        <meta name="description" content={seo?.meta_description || `Complete guide to ${formattedName} programs in Malaysia`} />
-        <meta name="keywords" content={seo?.meta_keyword || formattedName} />
+        <title>{seo?.meta_title || `${categoryData.name} ${currentLevel.title || ''} Course in Malaysia`}</title>
+        <meta name="description" content={seo?.meta_description || `Complete guide to ${categoryData.name} ${currentLevel.title || ''} programs in Malaysia`} />
+        <meta name="keywords" content={seo?.meta_keyword || categoryData.name} />
+<link rel="canonical" href={`https://educationmalaysia.in/specialization/${slug}${selectedLevel ? `-${selectedLevel}` : ''}`} />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-        {/* Modern Header with Gradient */}
         <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-cyan-600 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <Link to="/specialization" className="inline-flex items-center gap-2 text-blue-100 hover:text-white transition-colors mb-6">
@@ -952,47 +957,33 @@ const SpecializationDetail = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-16">
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
             
-            {/* Hero Image Section with Title Overlay */}
             <div className="relative h-96">
               <img
                 src={heroImage}
-                alt={formattedName}
+                alt={categoryData.name}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src = getCategoryImage('General');
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
               <div className="absolute bottom-0 left-0 right-0 p-8">
-                <div className="flex items-center gap-3 mb-3">
-                  {specializationData?.rating && (
-                    <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-semibold text-gray-900">{specializationData.rating}</span>
-                      {specializationData?.reviews && (
-                        <span className="text-sm text-gray-600">({specializationData.reviews} reviews)</span>
-                      )}
-                    </div>
-                  )}
-                </div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-                  {formattedName}
+                  {categoryData.name}
                 </h1>
                 <div className="flex flex-wrap gap-4 text-white/90">
-                  {specializationData?.university && (
-                    <div className="flex items-center gap-2">
-                      <GraduationCap className="w-5 h-5" />
-                      <span className="font-medium">{specializationData.university}</span>
-                    </div>
-                  )}
-                  {specializationData?.location && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-5 h-5" />
-                      <span>{specializationData.location}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5" />
+                    <span className="font-medium">Study in Malaysia</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5" />
+                    <span>Top Malaysian Universities</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Breadcrumb */}
             <div className="px-8 py-4 border-b border-gray-100">
               <div className="flex items-center text-sm text-gray-600 space-x-2">
                 <Link to="/" className="flex items-center gap-1 hover:text-blue-600 transition-colors">
@@ -1003,137 +994,150 @@ const SpecializationDetail = () => {
                   <Layers size={18}/> Specialization
                 </Link>
                 <span>/</span>
-                <span className="font-medium text-gray-900">{formattedName}</span>
+                <span className="font-medium text-gray-900">{categoryData.name}</span>
+                {level && (
+                  <>
+                    <span>/</span>
+                    <span className="font-medium text-blue-600">{currentLevel.title}</span>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Education Level Selector */}
-            <div className="border-b border-gray-200 bg-white sticky top-0 z-20 shadow-sm">
-              <div className="px-8 py-4">
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Select Education Level</h3>
-                <div className="flex flex-wrap gap-3">
-                  {[
-                    { key: 'diploma', label: 'Diploma', icon: FileText },
-                    { key: 'undergraduate', label: 'Undergraduate', icon: GraduationCap },
-                    { key: 'postgraduate', label: 'Postgraduate', icon: Award },
-                    { key: 'phd', label: 'PhD', icon: Target },
-                    { key: 'certificate', label: 'Certificates', icon: BookOpen }
-                  ].map((level) => (
-                    <button
-                      key={level.key}
-                      onClick={() => setSelectedLevel(level.key)}
-                      className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all ${
-                        selectedLevel === level.key
-                          ? 'bg-blue-600 text-white shadow-lg'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      <level.icon className="w-5 h-5" />
-                      {level.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+      
+<div className="border-b border-gray-200 bg-white shadow-sm">
+  <div className="px-4 sm:px-8 py-1">
+    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Select Education Level</h3>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      {[
+        { key: 'diploma', label: 'Diploma', icon: FileText },
+        { key: 'undergraduate', label: 'Undergraduate', icon: GraduationCap },
+        { key: 'postgraduate', label: 'Postgraduate', icon: Award },
+        { key: 'phd', label: 'PhD', icon: Target },
+        { key: 'certificate', label: 'Certificates', icon: BookOpen }
+      ].map((levelItem) => (
+        <Link
+          key={levelItem.key}
+          to={`/specialization/${slug}-${levelItem.key}`}
+          className={`flex items-center justify-center gap-2 px-3 sm:px-5 py-3 rounded-xl font-medium transition-all text-center ${
+            selectedLevel === levelItem.key
+              ? 'bg-blue-600 text-white shadow-lg'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          <levelItem.icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+          <span className="text-sm sm:text-base whitespace-nowrap">{levelItem.label}</span>
+        </Link>
+      ))}
+    </div>
+  </div>
+</div>
 
-            {/* Level Info Cards */}
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-b border-blue-100">
-              <div className="px-8 py-6">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">{currentLevel.title || formattedName}</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 p-2 rounded-lg">
-                      <Clock className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Duration</div>
-                      <div className="font-semibold text-gray-900">{currentLevel.duration || 'N/A'}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="bg-green-100 p-2 rounded-lg">
-                      <DollarSign className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Tuition Fees</div>
-                      <div className="font-semibold text-gray-900">{currentLevel.fees || 'N/A'}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="bg-purple-100 p-2 rounded-lg">
-                      <Calendar className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Intake</div>
-                      <div className="font-semibold text-gray-900">{currentLevel.intake || 'N/A'}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="bg-orange-100 p-2 rounded-lg">
-                      <Award className="w-5 h-5 text-orange-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Accreditation</div>
-                      <div className="font-semibold text-gray-900">{currentLevel.accreditation || 'N/A'}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-b border-blue-100">
+  <div className="px-4 sm:px-8 py-6">
+    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">{currentLevel.title || categoryData.name}</h2>
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="flex items-center gap-3">
+        <div className="bg-blue-100 p-2 rounded-lg flex-shrink-0">
+          <Clock className="w-5 h-5 text-blue-600" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-sm text-gray-600">Duration</div>
+          <div className="font-semibold text-gray-900 whitespace-nowrap text-sm">{currentLevel.duration || 'Varies'}</div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="bg-green-100 p-2 rounded-lg flex-shrink-0">
+          <DollarSign className="w-5 h-5 text-green-600" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-sm text-gray-600">Tuition Fees</div>
+          <div className="font-semibold text-gray-900 whitespace-nowrap text-xs sm:text-sm">{currentLevel.fees || 'Contact Us'}</div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="bg-purple-100 p-2 rounded-lg flex-shrink-0">
+          <Calendar className="w-5 h-5 text-purple-600" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-sm text-gray-600">Intake</div>
+          <div className="font-semibold text-gray-900 whitespace-nowrap text-xs sm:text-sm">{currentLevel.intake || 'Multiple'}</div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="bg-orange-100 p-2 rounded-lg flex-shrink-0">
+          <Award className="w-5 h-5 text-orange-600" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-sm text-gray-600">Accreditation</div>
+          <div className="font-semibold text-gray-900 whitespace-nowrap text-xs sm:text-sm">{currentLevel.accreditation || 'MQA'}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-            {/* Sticky Tabs Navigation */}
-            <div className="border-b border-gray-200 bg-white sticky top-[140px] z-10 shadow-sm">
-              <div className="px-8 py-4">
-                <div className="flex flex-wrap gap-3">
-                  {tabs.map(({ name, icon }) => (
-                    <button
-                      key={name}
-                      onClick={() => handleTabClick(name)}
-                      className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all ${
-                        activeTab === name
-                          ? 'bg-blue-600 text-white shadow-lg'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {icon}
-                      {name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+              {tabs.length > 0 && (
+<div className="sticky top-20 z-30 bg-white border-b border-gray-200 shadow-md">
+    <div className="px-4 sm:px-8">
+      <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+        {tabs.map(({ name, icon }) => (
+          <button
+            key={name}
+            onClick={() => handleTabClick(name)}
+            className={`flex items-center gap-2 py-3 font-medium whitespace-nowrap transition-all border-b-2 ${
+              activeTab === name
+                ? 'text-blue-600 border-blue-600'
+                : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+            }`}
+          >
+            {icon}
+            <span className="text-sm">{name}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
 
-            {/* Main Content Grid */}
+
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8">
               
-              {/* Left Column - Main Content */}
               <div className="lg:col-span-2 space-y-8">
-                
-                {/* Dynamic Content Sections from API */}
-                {tabs.map(({ name }, idx) => (
-                  <motion.section
-                    key={name}
-                    ref={sectionRefs.current[name]}
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: idx * 0.1 }}
-                    className="scroll-mt-24"
-                  >
-                    <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl p-6 border border-blue-100 shadow-md hover:shadow-lg transition-shadow">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <span className="text-blue-600">{tabIcons[name] || <Info className="w-6 h-6" />}</span>
-                        {name}
-                      </h2>
-                      <div 
-                        className="prose prose-blue max-w-none text-gray-700 leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: formatHTML(contentMap[name]) }} 
-                      />
-                    </div>
-                  </motion.section>
-                ))}
 
-                {/* University Cards */}
+
+                
+                {tabs.length > 0 ? (
+                  tabs.map(({ name }, idx) => (
+                    <motion.section
+                      key={name}
+                      ref={sectionRefs.current[name]}
+                      initial={{ opacity: 0, y: 50 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: idx * 0.1 }}
+                      className="scroll-mt-32"
+                    >
+                      <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl p-6 border border-blue-100 shadow-md hover:shadow-lg transition-shadow">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                          <span className="text-blue-600">{tabIcons[name] || <Info className="w-6 h-6" />}</span>
+                          {name}
+                        </h2>
+                        <div 
+                          className="prose prose-blue max-w-none text-gray-700 leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: formatHTML(contentMap[name]) }} 
+                        />
+                      </div>
+                    </motion.section>
+                  ))
+                ) : (
+                  <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center">
+                    <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500">Course details coming soon.</p>
+                  </div>
+                )}
+
                 <motion.div
                   initial={{ opacity: 0, y: 50 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -1143,7 +1147,6 @@ const SpecializationDetail = () => {
                   <UniversityCard />
                 </motion.div>
 
-                {/* FAQs Section */}
                 {faqs.length > 0 && (
                   <motion.section
                     initial={{ opacity: 0, y: 50 }}
@@ -1177,10 +1180,8 @@ const SpecializationDetail = () => {
                 )}
               </div>
 
-              {/* Right Column - Sidebar */}
               <div className="lg:col-span-1 space-y-6">
                 
-                {/* Quick Info Card */}
                 <motion.div
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -1208,10 +1209,14 @@ const SpecializationDetail = () => {
                   </button>
                 </motion.div>
 
-                {/* Sidebar Components */}
                 <TrendingCourse2 />
+                
                 <GetInTouchForm />
-                <FeaturedUniversities />
+                
+             <div className="-mt-2">
+                  <FeaturedUniversities />
+                </div>
+              
               </div>
             </div>
 
