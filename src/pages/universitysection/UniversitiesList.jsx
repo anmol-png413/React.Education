@@ -100,6 +100,7 @@ const UniversitiesList = () => {
   const [showMore, setShowMore] = useState(false);
   const [dynamicFilters, setDynamicFilters] = useState({ institute_types: [], states: [] });
   const [filtersLoaded, setFiltersLoaded] = useState(false);
+  const [expandedCards, setExpandedCards] = useState({});
 
   // Modal states
   const [feeModalOpen, setFeeModalOpen] = useState(false);
@@ -280,6 +281,12 @@ setTitle(pageTitle);
   };
 
   const toggleShowMore = () => setShowMore(!showMore);
+  const toggleCardDescription = (uniId) => {
+  setExpandedCards(prev => ({
+    ...prev,
+    [uniId]: !prev[uniId]
+  }));
+};
 
   // Modal open handlers
   const openFeeModal = (uni) => {
@@ -442,12 +449,28 @@ const infoText = getInfoText();
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
                       {uni.description || ""}
                     </p> */}
-<div className="mb-4" style={{ minHeight: '2.8rem' }}>
-  <p className="text-gray-600...">
-    {uni.shortnote || ""}
+{/* ✅ NEW TRUNCATED DESCRIPTION - Line ~455 */}
+<div className="mb-4">
+  <p className={`text-gray-600 text-sm leading-relaxed transition-all duration-300 ${
+    expandedCards[uni.id] ? '' : 'line-clamp-2'
+  }`}>
+    {uni.shortnote || "No description available"}
   </p>
-</div>
-                    
+  
+  {/* Show More/Less button - only show if text is long */}
+  {uni.shortnote && uni.shortnote.length > 100 && (
+    <button
+      onClick={() => toggleCardDescription(uni.id)}
+      className="text-blue-600 text-xs font-semibold hover:underline mt-1.5 flex items-center gap-1"
+    >
+      {expandedCards[uni.id] ? (
+        <>Show Less <FiChevronDown className="rotate-180 transition-transform" /></>
+      ) : (
+        <>Show More <FiChevronDown className="transition-transform" /></>
+      )}
+    </button>
+  )}
+</div>             
 
                   {/* Stats Grid */}
 <div className="grid grid-cols-3 gap-4 mb-5">

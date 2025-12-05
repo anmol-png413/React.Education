@@ -238,6 +238,8 @@ import Culture from "./components/home section/Culture";
 import MalaysiaStudyInfo from "./components/home section/MalaysiaStudyInfo";
 import PopularUniversities from "./components/home section/PopularUniversities";
 import FieldStudy from "./components/home section/FieldStudy";
+import CountryDashboard from "./components/home section/CountryDashboard ";
+
 import TrendingCourses from "./components/TrendingCourses";
 import UniversityRankingTable from "./components/home section/UniversityRankingTable";
 import CounsellorSupport from "./components/home section/CounsellorSupport";
@@ -250,6 +252,9 @@ import SignUp from "./pages/Regstation/StudentRegstation/SignUp";
 
 import Universities from "./pages/universitysection/Universities";
 import Courses from "./pages/Courses";
+import CourseDetail from "./pages/universitysection/CourseDetail";
+
+
 import Specialization from "./pages/Specialization";
 import SpecializationDetail from "./pages/SpecializationDetail";
 import Scholarship from "./pages/Scholarship";
@@ -329,6 +334,7 @@ function App() {
               <MalaysiaStudyInfo />
               <ProgrammeSelector />
               <FieldStudy />
+              <CountryDashboard/>
               <UniversityRankingTable />
               <TestimonialSlider />
             </>
@@ -340,8 +346,17 @@ function App() {
        {/* ✅ Main Course Route - SINGULAR */}
 <Route path="/courses-in-malaysia" element={<Courses />} />
 
+{/* ✅ YE NAYA LINE ADD KARO - Extra 's' wale URL ko redirect karega */}
+<Route path="/courses-in-malaysias" element={<Navigate to="/courses-in-malaysia" replace />} />
+
+
+
 {/* ✅ All Filter Routes - Dynamic Catch-All */}
 <Route path="/:filterSlug-courses" element={<Courses />} />
+
+{/* <Route path="/university/:slug/courses/:course_slug" element={<CourseDetail />} /> */}
+// App.jsx LINE 151 ko isse replace karo:
+<Route path="/university/:slug/courses/:courseSlug" element={<CourseDetail />} />
         <Route path="/specialization" element={<Specialization />} />
 
         
@@ -371,9 +386,16 @@ function App() {
         <Route path="/study-malaysia" element={<StudyMalaysia />} />
         <Route path="/why-study" element={<WhyStudyInM />} />
         <Route path="/courses/:slug" element={<QualifiedLevelDetail />} />
-        <Route path="/university/:slug" element={<UniversityDetail />} />
+
+        {/* <Route path="/university/:slug" element={<UniversityDetail />} />
         <Route path="/university/:slug/:section" element={<UniversityDetail />} />
-        <Route path="/university/:slug/courses/:courseSlug" element={<UniversityDetail />} />
+        <Route path="/university/:slug/courses/:courseSlug" element={<UniversityDetail />} /> */}
+        {/* ✅ University Routes */}
+<Route path="/university/:slug" element={<UniversityDetail />} />
+<Route path="/university/:slug/:section" element={<UniversityDetail />} />
+<Route path="/university/:slug/courses" element={<UniversityDetail />} />
+<Route path="/university/:slug/courses/:courseSlug" element={<UniversityDetail />} />
+
         <Route path="/universities/:type" element={<UniversitiesList />} />
         <Route path="/write-a-review" element={<WriteReviewPage />} />
         <Route path="/faqs" element={<Faqs />} />
